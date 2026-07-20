@@ -79,7 +79,15 @@ This is how the product thinks; users never see these words, they see outcomes.
 - **Identity vs type:** the dimension is the type (car, owner); VIN / plate / DL# is the point that
   pins one instance.
 - **Compression is the same rule+residual**, named "compression" because people know the word. Datasets,
-  files, or folders collapse to a rule; click to bloom back, exact.
+  files, or folders collapse to a rule; click to bloom back, exact. Shown as a multiplier ("143x", the
+  wow reads better than "99%"), with original->new size and time, and a light tooltip: not a zip, it
+  keeps the pattern's rules plus a small residual. It wins exactly the structure present (flat/random
+  stays the same), and the rebuild is byte-for-byte (SHA-verified).
+- **Portable, self-describing compressed files.** Save & Compress emits a file that carries its own
+  bloom instructions (the inverse, z=x/y), so ANY computer rebuilds it with no special software, the
+  simplest form is a tiny self-contained HTML that reconstructs and offers the original on open. Nothing
+  is saved unless the user explicitly saves; by default the app OBSERVES/REFERENCES sources, never holds
+  them. It is all in the rules.
 - **Open by default, prefab holdings when known.** We dictate no schema. Optionally, a **holding** is a
   prebuilt, reusable, encapsulated dimensional unit (an "invoice", a "car", a scenario) that is itself a
   point/line/plane/volume you can drop in, reuse, and connect. Holdings live in the engine's versioned
