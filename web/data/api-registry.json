@@ -18,8 +18,8 @@
     { "id": "dictionaryapi", "name": "Free Dictionary", "domain": "language", "keywords": ["word", "define", "definition", "dictionary", "meaning"],
       "endpoint": "https://api.dictionaryapi.dev/api/v2/entries/en", "query_param": "path", "browser": true, "auth": "none", "docs": "https://dictionaryapi.dev" },
     { "id": "tmdb", "name": "The Movie Database", "domain": "movies", "keywords": ["movie", "movies", "film", "actor", "director", "cast"],
-      "endpoint": "https://api.themoviedb.org/3/search/movie", "query_param": "query", "browser": false, "auth": "api_key", "docs": "https://developer.themoviedb.org" },
+      "endpoint": "https://api.themoviedb.org/3/search/movie", "query_param": "query", "browser": false, "auth": "api_key", "key_url": "https://www.themoviedb.org/settings/api", "docs": "https://developer.themoviedb.org" },
     { "id": "alphavantage", "name": "Alpha Vantage", "domain": "stocks", "keywords": ["stock", "stocks", "ticker", "symbol", "quote", "market", "price"],
-      "endpoint": "https://www.alphavantage.co/query", "query_param": "keywords", "browser": false, "auth": "api_key", "docs": "https://www.alphavantage.co/documentation" }
+      "endpoint": "https://www.alphavantage.co/query", "query_param": "keywords", "browser": false, "auth": "api_key", "key_url": "https://www.alphavantage.co/support/#api-key", "docs": "https://www.alphavantage.co/documentation" }
   ]
 }

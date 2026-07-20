@@ -38,6 +38,16 @@ a browser sandbox cannot silently read system folders).
 - **AI is an optional connector, never provided.** The core is deterministic and needs no model (the
   non-AI AI). If a user wants AI, they connect their own (an LLM endpoint is just another pointer),
   off by default, never a dependency. We ship no model.
+- **Public-API registry (a datastore of pointers).** A searchable table of public APIs, tagged by
+  domain/keywords with endpoint + auth. A query ("book titles") searches the registry and routes to the
+  matching APIs, then connects live on demand. Starter table shipped (web/data/api-registry.json, real
+  APIs; `browser:true` = CORS-open/no-key so it works in the browser demo); users add their own. It can
+  scale to thousands of APIs stored COMPRESSED, and is read/searched WITHOUT full decompress (addressed
+  access derives the match; a light index helps keyword search); only the entry you actually CALL is
+  decompressed. Routing UX: if a match needs a key, the app says so and prompts; if several match, the
+  user says "pick best" (auto-rank, prefer no-key/most-relevant) or "give me options" (list them). Each
+  entry marks key vs no-key; if a key is needed, the app links straight to where to create one
+  (`key_url`) when available. Demo uses canned samples to make getting started easy; product uses live.
 
 ### 2.2 What it does (the engine, in outcome language)
 
