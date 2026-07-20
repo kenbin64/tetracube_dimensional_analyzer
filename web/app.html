@@ -269,8 +269,8 @@
     return '<div class="comp"><div class="cl">Compression <span class="ttip" tabindex="0" title="Not a zip. It finds the pattern in your data, keeps the rules that generate it plus a small residual (a correction), and rebuilds it exactly. Structured data shrinks far beyond normal compression; flat or random data stays the same size.">i</span></div>'
       + '<div class="big">'+nx+'&times;<span style="font-size:1rem;color:var(--mist);font-weight:400"> smaller</span></div>'
       + '<div class="sub">'+fmt(origB)+' &rarr; '+fmt(newB)+' &middot; '+rec.cellsRaw.toLocaleString()+' cells &rarr; '+rec.cellsSeeded.toLocaleString()+' &middot; '+(REPORT._ms||1)+' ms</div>'
-      + '<div class="sub" style="color:var(--mist-dim);margin-top:4px">It wins exactly the structure present, and rebuilds every record byte-for-byte.</div>'
-      + '<div class="act"><button class="btn" id="bloombtn">Bloom it back</button><span id="bloomres"></span></div></div>';
+      + '<div class="sub" style="color:var(--mist-dim);margin-top:4px">It only compresses real structure, so random data stays the same size, and it restores every record byte-for-byte.</div>'
+      + '<div class="act"><button class="btn" id="bloombtn">Decompress</button><span id="bloomres"></span></div></div>';
   }
 
   function tableRows(rows, limit){
@@ -346,7 +346,7 @@
 
     const bb=document.getElementById('bloombtn'), br=document.getElementById('bloomres');
     if(bb) bb.onclick=()=>{ const ok=REPORT.receipt.lossless;
-      br.innerHTML='<span class="bloomed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Rebuilt all '+DATA.length.toLocaleString()+' records · '+(ok?'byte-for-byte identical':'MISMATCH')+'</span>'; };
+      br.innerHTML='<span class="bloomed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Restored all '+DATA.length.toLocaleString()+' records · '+(ok?'byte-for-byte identical':'MISMATCH')+'</span>'; };
 
     // universal clickability: every value cell is a point that drills to its set
     out.querySelectorAll('td.cell').forEach(td=>td.addEventListener('click',()=>tcClickVal(td.getAttribute('data-f'), td.getAttribute('data-v'))));
