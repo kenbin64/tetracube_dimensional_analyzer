@@ -32,20 +32,40 @@ function movies() {
   return rows;
 }
 
-// --- BOOKS: publisher is the entity (publisher -> country, founded); the rest varies ---
+// --- BOOKS: the whole subject, not just titles. Publisher and author are entities; type, binding,
+// material, era, format, language are independent facets (assigned by distinct-prime hashes so none
+// spuriously determines another). Drill any facet, then it gets more specific. ---
 function books() {
   const pubs = [
     ['Penguin', 'GB', 1935], ['HarperCollins', 'US', 1989], ['Vintage', 'US', 1954],
     ['Faber', 'GB', 1929], ['Gallimard', 'FR', 1911], ['Tor', 'US', 1980],
   ];
-  const genres = ['fiction', 'history', 'science', 'poetry', 'mystery'];
+  const authors = [
+    ['Austen', 'GB'], ['Hemingway', 'US'], ['Borges', 'AR'], ['Murakami', 'JP'],
+    ['Woolf', 'GB'], ['Marquez', 'CO'], ['Tolstoy', 'RU'], ['Calvino', 'IT'],
+  ];
+  const type = ['novel', 'textbook', 'reference', 'poetry', 'biography', 'children'];
+  const binding = ['hardcover', 'paperback', 'leather', 'spiral'];
+  const material = ['acid-free paper', 'vellum', 'recycled paper', 'coated stock'];
+  const era = ['18th century', '19th century', '20th century', '21st century'];
+  const format = ['print', 'ebook', 'audiobook'];
+  const language = ['English', 'French', 'German', 'Spanish', 'Japanese'];
   const rows = [];
-  for (let i = 0; i < 50; i++) {
+  for (let i = 0; i < 84; i++) {
     const p = pubs[i % pubs.length];
+    const a = authors[mix(i * 3) % authors.length];
     rows.push({
-      isbn13: 9780000000000 + i * 137, publisher: p[0], publisher_country: p[1], publisher_founded: p[2],
-      genre: genres[mix(i * 5) % genres.length], pub_year: 1996 + (i % 29),
-      pages: span(i * 9, 128, 720), list_price: (999 + (mix(i * 13) % 2000)) / 100,
+      book_id: 4000 + i,
+      author: a[0], author_country: a[1],
+      publisher: p[0], publisher_country: p[1], publisher_founded: p[2],
+      type: type[mix(i * 7) % type.length],
+      binding: binding[mix(i * 11) % binding.length],
+      material: material[mix(i * 13) % material.length],
+      era: era[mix(i * 17) % era.length],
+      format: format[mix(i * 19) % format.length],
+      language: language[mix(i * 23) % language.length],
+      pages: span(i * 9, 96, 940),
+      price: (699 + (mix(i * 29) % 3000)) / 100,
     });
   }
   return rows;
