@@ -6,6 +6,7 @@
 export { analyzeTask, taskReport } from './taskanalyzer.mjs';
 export { lintDynamoTask, dynamoLintReport, crossFileChecks, auditDynamoTask } from './dynamotask.mjs';
 export { CREASES, stumpScore, proposeStumps, adversaryPrompt, stumpReport } from './stumpsmith.mjs';
+export { analyzeDataset, parseCSV } from './dataset.mjs';
 
 // The engine underneath: store the generator, derive the field. Lossless rule + residual.
 export { seed, bloom, seedBest, shaSeq, structureScore } from './seedbloom.mjs';
