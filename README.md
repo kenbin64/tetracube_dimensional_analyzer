@@ -5,7 +5,7 @@ structure, decomposes it into its dimensions, and rebuilds it byte-for-byte. Eve
 page is backed by a test you can run in under a minute. No network, no framework, no magic.
 
 ```
-137 green checks across 16 receipts, 0 failed
+139 green checks across 16 receipts, 0 failed
 ```
 
 > **Using this from another agent?** It reads task descriptions **deterministically**, with no AI in the loop, which is exactly the point when the tasks are built to stymie AI. See [`AGENTS.md`](AGENTS.md).
