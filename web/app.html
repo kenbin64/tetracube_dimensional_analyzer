@@ -158,13 +158,15 @@
   // Identities (keys: order_id, vin) address one record. Relationships are built on demand by drilling.
   function facets(){
     // A dimension is a type you NAVIGATE (its name is the point; what it is stays latent until you
-    // drill). So exclude identities (keys), exclude entity attributes (they live inside their entity
-    // dimension), and exclude continuous measures (too many distinct values to be a category).
-    const attrs = new Set(REPORT.form.capstones.flatMap(c => c.gathers));
-    return REPORT.columns.filter(c =>
-      !REPORT.candidateKeys.includes(c.name) &&
-      !attrs.has(c.name) &&
-      c.distinct >= 2 && c.distinct <= Math.max(3, DATA.length * 0.5));
+    // drill). Keep categories (2..~half the rows distinct); drop identities (keys) and continuous
+    // measures (high-distinct numerics you would range-filter, not click through).
+    const cap = Math.max(3, DATA.length * 0.5), measCap = Math.max(3, DATA.length * 0.25);
+    return REPORT.columns.filter(c => {
+      if (REPORT.candidateKeys.includes(c.name)) return false;
+      if (c.distinct < 2 || c.distinct > cap) return false;
+      if (c.kind === 'numeric' && c.distinct > measCap) return false;
+      return true;
+    });
   }
   const inDrill = n => DRILL.some(d=>d.dim===n);
   function slice(){ return DATA.filter(r => DRILL.every(d => String(r[d.dim])===String(d.value))); }
