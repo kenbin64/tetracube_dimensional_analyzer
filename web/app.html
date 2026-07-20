@@ -79,6 +79,12 @@
   th,td{text-align:left;padding:6px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
   th{position:sticky;top:0;background:var(--surface-2);color:var(--brass);font-weight:600;z-index:1}
   td{color:var(--paper)} td.num{color:var(--verify);text-align:right} tr:hover td{background:rgba(201,162,76,.04)}
+  td.cell{cursor:pointer} td.cell:hover{background:rgba(95,208,196,.10);color:var(--verify)}
+  .qconds{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .qc{font-family:var(--mono);font-size:.78rem;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:5px 9px;color:var(--paper)}.qc b{color:var(--brass)}
+  .qx{background:none;border:none;color:var(--mist-dim);cursor:pointer;font-size:.95rem;padding:0 0 0 5px}
+  .setres{margin:12px 0}.setn{font-weight:600;font-size:1.05rem;margin-bottom:8px}
+  .spark{width:100%;height:120px;display:block}
   .proc{color:var(--verify);font-family:var(--mono);font-size:.9rem;padding:26px 0;text-align:center}
   .foot{color:var(--mist-dim);font-family:var(--mono);font-size:.7rem;text-align:center;margin-top:26px}
 
@@ -141,9 +147,10 @@
   import { analyzeDataset, parseCSV } from '../src/index.mjs';
 
   const out = document.getElementById('out'), fileEl = document.getElementById('file'), drop = document.getElementById('drop');
-  let DATA=null, REPORT=null, NAME='', DRILL=[];   // DRILL = [{dim, value}, ...] the path we drilled
+  let DATA=null, REPORT=null, NAME='', DRILL=[], QCONDS=[];   // DRILL = drill path; QCONDS = set query
 
   const esc = s => String(s).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+  const escA = s => esc(s).replace(/"/g,'&quot;');
   const isNum = v => v!==null && v!=='' && v!==undefined && Number.isFinite(Number(v));
 
   // ---- ingest ----
@@ -178,6 +185,29 @@
 
   window.tcDrill = (dim,value)=>{ DRILL.push({dim, value:String(value)}); renderNav(); };
   window.tcUp = (level)=>{ DRILL = DRILL.slice(0, level); renderNav(); };
+  window.tcDelCond = (i)=>{ QCONDS.splice(i,1); renderNav(); };
+  // Everything is clickable: any value is a point that drills to its set (the relationship on demand).
+  window.tcClickVal = (field,value)=>{ if(!DRILL.some(d=>d.dim===field)) DRILL.push({dim:field, value:String(value)}); QCONDS=[]; renderNav(); };
+
+  // ---- the set-finder: describe a pattern, it searches every relationship (the non-AI AI part) ----
+  function matchCond(r,q){
+    const v = r[q.field];
+    if(q.op==='between'){ const n=Number(v); return isNum(v) && n>=Number(q.a) && n<=Number(q.b); }
+    if(q.op==='not') return String(v)!==String(q.a);
+    return String(v)===String(q.a);
+  }
+  function queryPanel(){
+    const fields = REPORT.columns.map(c=>c.name);
+    const conds = QCONDS.map((q,i)=>'<span class="qc">'+esc(q.field)+' <b>'+q.op+'</b> '+esc(q.a)+(q.op==='between'?' &hellip; '+esc(q.b):'')+' <button class="qx" onclick="tcDelCond('+i+')" title="remove">&times;</button></span>').join('');
+    return '<div class="panel"><div class="ph"><h3>Find a set</h3><span class="hint">searches every relationship &middot; deterministic, no AI</span></div><div class="pb">'
+      + '<div class="lookrow"><span style="color:var(--mist)">all records where</span> '
+      + '<select class="sel" id="qf">'+fields.map(f=>'<option>'+esc(f)+'</option>').join('')+'</select>'
+      + '<select class="sel" id="qop"><option value="is">is</option><option value="between">between</option><option value="not">is not</option></select>'
+      + '<input class="inp" id="qa" placeholder="value" style="width:120px"><input class="inp" id="qb" placeholder="and" style="width:80px">'
+      + '<button class="btn ghost" id="qadd">+ condition</button><button class="btn" id="qrun">Find set</button></div>'
+      + (QCONDS.length?'<div class="qconds">'+conds+'</div>':'')
+      + '<div id="qout"></div></div></div>';
+  }
 
   function renderNav(){
     const rows = slice();
@@ -198,12 +228,15 @@
     out.innerHTML = ''
       + '<div class="crumbs">'+crumbs+'</div>'
       + '<div class="lead"><h2>'+(DRILL.length? 'Inside this slice' : 'Dimensions in '+esc(NAME))+'</h2><span class="fn">'+rows.length.toLocaleString()+' of '+DATA.length.toLocaleString()+' records</span></div>'
-      + '<p class="teach">Drill a dimension to build the relationship on demand. Nothing was joined ahead of time.</p>'
+      + '<p class="teach">It is not a tree. Reach anything by address: find a set below, retrieve one record, or browse the dimensions. Relationships are built on demand.</p>'
+      + queryPanel()
+      + '<div class="lead" style="margin-top:20px"><h2 style="font-size:1.05rem">Or browse the dimensions</h2></div>'
       + dimsHtml
       + '<div class="row2">'
         + retrievalPanel(rows)
         + analyzePanel()
       + '</div>'
+      + trendPanel(rows)
       + compressionPanel()
       + dataPanel(rows);
 
@@ -230,16 +263,58 @@
       + '<div class="act"><button class="btn" id="bloombtn">Bloom it back</button><span id="bloomres"></span></div></div>';
   }
 
-  function dataPanel(rows){
-    const names = REPORT.columns.map(c=>c.name);
-    let h='<details class="data"><summary>The records ('+Math.min(rows.length,200)+' shown)</summary><div class="tblwrap"><table><thead><tr>';
+  function tableRows(rows, limit){
+    let h='<div class="tblwrap"><table><thead><tr>';
     for(const c of REPORT.columns){ const role = REPORT.candidateKeys.includes(c.name)?'identity':(c.dim==='surface'?'linked':(c.kind==='numeric'?'measure':'dimension')); h+='<th>'+esc(c.name)+'<div style="font-size:.6rem;color:var(--mist-dim);font-weight:400">'+role+'</div></th>'; }
     h+='</tr></thead><tbody>';
-    for(const r of rows.slice(0,200)){ h+='<tr>'; for(const n of names){ const v=r[n]; h+='<td'+(isNum(v)?' class="num"':'')+'>'+esc(v==null?'':v)+'</td>'; } h+='</tr>'; }
-    return h+'</tbody></table></div></details>';
+    const names = REPORT.columns.map(c=>c.name);
+    for(const r of rows.slice(0, limit||200)){ h+='<tr>';
+      for(const n of names){ const v=r[n];
+        if(v!=null && String(v)!=='') h+='<td class="cell'+(isNum(v)?' num':'')+'" data-f="'+escA(n)+'" data-v="'+escA(String(v))+'">'+esc(v)+'</td>';
+        else h+='<td></td>'; }
+      h+='</tr>'; }
+    return h+'</tbody></table></div>';
+  }
+  function dataPanel(rows){
+    return '<details class="data"><summary>The records ('+Math.min(rows.length,200)+' shown &middot; click any value to drill)</summary>'+tableRows(rows)+'</details>';
+  }
+  // Trend: once you have focused a slice, draw the measure that MOVES as a line (the "volume" axis).
+  function trendPanel(rows){
+    if(DRILL.length===0 || rows.length<3) return '';   // only on a focused slice, else it is noise
+    const nums = REPORT.columns.filter(c=>c.kind==='numeric');
+    // a measure "moves": prefer a column with fractional values (a price/score), else the most-varied
+    let meas = nums.find(c=>rows.some(r=>{ const n=Number(r[c.name]); return Number.isFinite(n) && !Number.isInteger(n); }));
+    if(!meas) meas = nums.filter(c=>!REPORT.candidateKeys.includes(c.name)).sort((a,b)=>b.distinct-a.distinct)[0];
+    if(!meas) return '';
+    const ys = rows.map(r=>Number(r[meas.name])).filter(Number.isFinite);
+    if(ys.length<3) return '';
+    const lo=Math.min(...ys), hi=Math.max(...ys), W=560, H=120, p=8, span=(hi-lo)||1;
+    const pts = ys.map((y,i)=>((p+(i/(ys.length-1))*(W-2*p)).toFixed(1))+','+((H-p-((y-lo)/span)*(H-2*p)).toFixed(1))).join(' ');
+    return '<div class="panel" style="margin-top:16px"><div class="ph"><h3>Trend</h3><span class="hint">'+esc(meas.name)+' &middot; '+ys.length+' points</span></div><div class="pb">'
+      + '<svg class="spark" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none"><polyline points="'+pts+'" fill="none" stroke="var(--verify)" stroke-width="2" stroke-linejoin="round"/></svg>'
+      + '<div class="mono" style="font-size:.72rem;color:var(--mist-dim);margin-top:6px">low '+lo+' &middot; high '+hi+'</div></div></div>';
   }
 
   function wire(){
+    const qadd=document.getElementById('qadd'), qrun=document.getElementById('qrun');
+    if(qadd) qadd.onclick=()=>{ const f=document.getElementById('qf').value, op=document.getElementById('qop').value, a=document.getElementById('qa').value, b=document.getElementById('qb').value;
+      if(a==='') return; QCONDS.push({field:f, op, a, b}); renderNav(); };
+    if(qrun) qrun.onclick=()=>{ const qout=document.getElementById('qout');
+      if(!QCONDS.length){ qout.innerHTML='<div class="empty">Add a condition, then Find set.</div>'; return; }
+      const set=DATA.filter(r=>QCONDS.every(q=>matchCond(r,q)));
+      if(!set.length){ qout.innerHTML='<div class="empty">No records match &mdash; this set is empty.</div>'; return; }
+      const R=analyzeDataset(set), seen=new Set(), ents=[];
+      for(const c of R.form.capstones){ const sig=[c.apex,...c.gathers].sort().join('|'); if(!seen.has(sig)){ seen.add(sig); ents.push(c); } }
+      const pct=Math.max(0,Math.round((1-R.receipt.cellsSeeded/R.receipt.cellsRaw)*100));
+      const relLine = ents.length
+        ? '<span class="desc">relationships in this set:</span> '+ents.map(e=>'<span class="pill ent">'+esc(e.apex)+'</span>').join(' ')
+        : '<span class="desc">independent fields &mdash; no entity binds this set</span>';
+      qout.innerHTML='<div class="setres"><div class="setn">'+set.length+' records match</div>'
+        + '<div class="rel">'+relLine+'</div>'
+        + '<div class="rel"><span class="desc">'+R.rank+' independent axes &middot; compresses '+(pct>0?('-'+pct+'%'):'flat')+' &middot; rebuilds '+(R.receipt.lossless?'exact':'&mdash;')+'</span></div></div>'
+        + tableRows(set, 60);
+      qout.querySelectorAll('td.cell').forEach(td=>td.addEventListener('click',()=>tcClickVal(td.getAttribute('data-f'), td.getAttribute('data-v')))); };
+
     const go=document.getElementById('lugo'), hit=document.getElementById('hit');
     if(go) go.onclick=()=>{ const f=document.getElementById('luf').value, v=document.getElementById('luv').value;
       const idx=DATA.findIndex(r=>String(r[f])===String(v));
@@ -262,6 +337,9 @@
     const bb=document.getElementById('bloombtn'), br=document.getElementById('bloomres');
     if(bb) bb.onclick=()=>{ const ok=REPORT.receipt.lossless;
       br.innerHTML='<span class="bloomed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Rebuilt all '+DATA.length.toLocaleString()+' records · '+(ok?'byte-for-byte identical':'MISMATCH')+'</span>'; };
+
+    // universal clickability: every value cell is a point that drills to its set
+    out.querySelectorAll('td.cell').forEach(td=>td.addEventListener('click',()=>tcClickVal(td.getAttribute('data-f'), td.getAttribute('data-v'))));
   }
 
   // ---- file/sample loading ----
