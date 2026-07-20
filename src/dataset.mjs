@@ -62,6 +62,35 @@ function candidateKeys(cols, nRows) {
   return cols.filter((c) => nRows > 1 && c.distinct === nRows).map((c) => c.name);
 }
 
+// FORM-FIRST read: describe the SHAPE the data takes, not the numbers. Geometry is the payload;
+// numbers are only the addresses underneath (Ken's note). Three gathers, in rising dimension:
+//   surface  (z = x*y)    two perpendicular axes gather where one determines the other
+//   capstone (c = x*y*z)  an apex axis gathers a VOLUME of >=2 attributes into one point one
+//                         dimension up: an entity/cone, the smooth (cornerless) gather that recurses
+//   key                   the row's own address: the whole record is a point addressed by this axis
+function buildForm(names, deps, keys) {
+  const byApex = new Map();
+  for (const d of deps) { if (!byApex.has(d.from)) byApex.set(d.from, []); byApex.get(d.from).push(d.to); }
+  const keySet = new Set(keys);
+  const surfaces = [], capstones = [];
+  for (const [apex, targets] of byApex) {
+    if (keySet.has(apex)) continue;                 // a full key is the row address, handled below
+    if (targets.length >= 2) capstones.push({ apex, gathers: targets, via: 'c=x*y*z (cone/entity, an apex one dimension up)' });
+    else surfaces.push({ axes: [apex, targets[0]], via: 'z=x*y (coupled surface)' });
+  }
+  const independent = names.filter((n) => {
+    const determinedByOther = deps.some((d) => d.to === n && !keySet.has(d.from) && d.from !== n);
+    return !determinedByOther || keySet.has(n);
+  });
+  // Highest form present sets the dimensional rank name.
+  const rank = capstones.length ? 'capstone (c=x*y*z)'
+    : surfaces.length ? 'surface (z=x*y)'
+    : independent.length > 1 ? 'volume (independent axes)'
+    : 'line';
+  return { dimensionalRank: rank, independentAxes: independent, surfaces, capstones, rowAddresses: keys,
+    note: 'shape is the payload; numbers are the addresses. cones/capstones are the natural (cornerless) gather that recurses into helixes.' };
+}
+
 // The main analyzer. Returns a structured, honest report + a losslessness receipt.
 export function analyzeDataset(rows) {
   if (!Array.isArray(rows) || rows.length === 0) {
@@ -108,16 +137,20 @@ export function analyzeDataset(rows) {
   // Strip internal fields from the public report.
   const publicCols = cols.map(({ _seed, _nums, ...rest }) => rest);
 
+  // The FORM comes first: the shape the data takes. Numbers (rank, ratio) are the address layer.
+  const form = buildForm(names, deps, keys);
+
   return {
     ok: true,
     rows: rows.length,
+    form,                                 // FORM-FIRST: the geometry (surfaces, capstones, axes)
     columns: publicCols,
     rank: independent.length,             // independent axes (PRIMER: count)
     independentAxes: independent,
     couplings: deps,                      // discovered relationships (PRIMER: the z=xy surfaces)
     candidateKeys: keys,                  // discovered addresses
     structureScore: structure,            // how dimensional is this data (Guard 5)
-    receipt: {
+    receipt: {                            // BYPRODUCT: the losslessness proof + honest size number
       lossless,                           // bloom(seed(table)) === table, SHA-checked (Guard 4/6)
       shaIn: shaIn.slice(0, 16),
       shaOut: shaOut.slice(0, 16),

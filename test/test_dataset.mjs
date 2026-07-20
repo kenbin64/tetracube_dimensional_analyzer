@@ -11,10 +11,10 @@ console.log('dataset analyzer receipts');
 // A table with: a key (order_id, all distinct), a real functional dependency (dept_id -> dept_name),
 // a generated numeric column (qty is arithmetic: 10,12,14,...), and categorical noise (note).
 const rows = [];
-const depts = { 1: 'sales', 2: 'ops', 3: 'eng' };
+const depts = { 1: ['sales', 'west'], 2: ['ops', 'east'], 3: ['eng', 'west'] };
 for (let i = 0; i < 12; i++) {
   const d = (i % 3) + 1;
-  rows.push({ order_id: 1000 + i, dept_id: d, dept_name: depts[d], qty: 10 + 2 * i, note: ['a', 'b'][i % 2] });
+  rows.push({ order_id: 1000 + i, dept_id: d, dept_name: depts[d][0], dept_region: depts[d][1], qty: 10 + 2 * i, note: ['a', 'b'][i % 2] });
 }
 const r = analyzeDataset(rows);
 
@@ -31,6 +31,21 @@ ok('qty structure score is high (the rule captured it)',
 ok('the whole table round-trips LOSSLESSLY (bloom(seed)===table, SHA-checked)', r.receipt.lossless === true);
 ok('rank counts the independent axes, fewer than the raw column count',
   r.rank < r.columns.length && r.rank >= 1);
+
+// FORM-FIRST: it reports the shape. dept_id gathers dept_name AND dept_region into one apex = a
+// capstone (c=x*y*z, an entity/cone one dimension up).
+ok('form leads the report (geometry before numbers)', r.form && typeof r.form.dimensionalRank === 'string');
+ok('finds the dept_id capstone (an entity gathering >=2 attributes to an apex)',
+  r.form.capstones.some((c) => c.apex === 'dept_id' && c.gathers.includes('dept_name') && c.gathers.includes('dept_region')));
+ok('names the highest dimensional form present', /capstone/.test(r.form.dimensionalRank));
+console.log('\n  --- form the engine reports on the sample table ---');
+console.log('  dimensionalRank :', r.form.dimensionalRank);
+console.log('  independentAxes :', r.form.independentAxes.join(', '));
+console.log('  surfaces        :', JSON.stringify(r.form.surfaces.map((s) => s.axes)));
+console.log('  capstones       :', JSON.stringify(r.form.capstones.map((c) => ({ apex: c.apex, gathers: c.gathers }))));
+console.log('  rowAddresses    :', r.form.rowAddresses.join(', '));
+console.log('  receipt (byproduct):', 'lossless=' + r.receipt.lossless, 'ratio=' + r.receipt.ratio.toFixed(2) + 'x');
+console.log('  ---\n');
 
 // Honesty guard: on structureless data it must NOT invent structure; it degrades to flat (ratio ~1).
 // These values fit no const/arith/fib/quad/cubic rule, so the engine must fall back to raw and still
