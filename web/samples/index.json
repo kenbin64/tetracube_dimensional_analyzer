@@ -1,0 +1,22 @@
+[
+  {
+    "file": "movies.json",
+    "label": "Movies",
+    "rows": 56
+  },
+  {
+    "file": "books.json",
+    "label": "Books",
+    "rows": 50
+  },
+  {
+    "file": "stocks.json",
+    "label": "Stocks",
+    "rows": 60
+  },
+  {
+    "file": "cities.json",
+    "label": "World cities",
+    "rows": 48
+  }
+]

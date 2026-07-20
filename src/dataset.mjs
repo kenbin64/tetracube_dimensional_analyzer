@@ -25,12 +25,21 @@ function analyzeColumn(name, values) {
   };
   if (numeric) {
     const nums = values.map(Number);
-    const best = seedBest(nums);       // the real engine: fit a generator, MDL-gated, lossless
-    col.rule = best.rule;              // which generator fit (or 'raw' = no structure, degrade to flat)
-    col.structureScore = best.score;   // fraction the rule captured (Guard 5: how dimensional is this)
-    col.ratio = best.ratio;            // cells saved by the generator vs raw (1.0 = flat, per Guard)
-    col._seed = best.seed;             // kept for the round-trip receipt
     col._nums = nums;
+    const best = seedBest(nums);       // the real engine: fit a generator, MDL-gated
+    // Guarantee losslessness (Guard 4): credit the generator ONLY if it blooms back bit-exact.
+    // Integer runs do; floating-point runs may not (predict+residual is not exactly associative),
+    // so those carry raw and stay lossless rather than claim a win that would not round-trip.
+    let exact = best.rule !== 'raw';
+    if (exact) {
+      try { const rb = bloom(best.seed); exact = rb.length === nums.length && rb.every((v, i) => Object.is(v, nums[i])); }
+      catch { exact = false; }
+    }
+    if (exact) {
+      col.rule = best.rule; col.structureScore = best.score; col.ratio = best.ratio; col._seed = best.seed;
+    } else {
+      col.rule = 'raw'; col.structureScore = 0; col.ratio = 1; col._seed = null;  // carried raw, still lossless
+    }
   }
   return col;
 }
@@ -115,7 +124,7 @@ export function analyzeDataset(rows) {
   const original = rows.map((r) => names.map((n) => (n in r ? r[n] : null)));
   const rebuilt = names.map((n) => {
     const c = cols.find((x) => x.name === n);
-    if (c.kind === 'numeric') return bloom(c._seed);
+    if (c.kind === 'numeric') return c._seed ? bloom(c._seed) : c._nums;  // raw fallback stays exact
     return rows.map((r) => (n in r ? r[n] : null));
   });
   const rebuiltRows = rows.map((_, i) => names.map((__, j) => rebuilt[j][i]));
@@ -126,12 +135,12 @@ export function analyzeDataset(rows) {
   // Honest size accounting in CELLS: raw = rows*cols; seeded = numeric seed sizes + raw categorical.
   const rawCells = rows.length * names.length;
   let seededCells = 0;
-  for (const c of cols) seededCells += c.kind === 'numeric' ? seedSize(c._seed) : rows.length;
+  for (const c of cols) seededCells += (c.kind === 'numeric' && c._seed) ? seedSize(c._seed) : rows.length;
 
-  // Overall structure score: cell-weighted average of numeric columns' structure (0 if none numeric).
+  // Overall structure score: average of numeric columns' captured structure (0 if none numeric).
   const numCols = cols.filter((c) => c.kind === 'numeric');
   const structure = numCols.length
-    ? numCols.reduce((s, c) => s + structureScore(c._seed), 0) / numCols.length
+    ? numCols.reduce((s, c) => s + (c.structureScore || 0), 0) / numCols.length
     : 0;
 
   // Strip internal fields from the public report.

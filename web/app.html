@@ -96,7 +96,7 @@
     <input type="file" id="file" accept=".csv,.json,text/csv,application/json" hidden>
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0 4 4m-4-4L8 8"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
     <div class="big">Drop a dataset (CSV or JSON), or <button class="link" id="pick" type="button">choose one</button></div>
-    <div class="or">or <button class="link" id="sample" type="button">load a sample</button> &middot; nothing leaves your machine</div>
+    <div class="or">or try public data: <span id="samples" class="samples"></span></div>
   </div>
 
   <div class="out" id="out" hidden></div>
@@ -229,8 +229,16 @@
     else rows=parseCSV(t);
     analyze(rows, nm); }); }
 
+  // Public sample buttons — DEMO ONLY. The downloadable app ships empty and connects to the user's
+  // own folders and sources; these curated public datasets are just to show what the engine does.
+  fetch('samples/index.json').then(r=>r.json()).then(list=>{
+    const host=document.getElementById('samples');
+    host.innerHTML=list.map(s=>'<button class="link" data-f="'+s.file+'" data-l="'+s.label+'">'+s.label+'</button>').join(' &middot; ');
+    host.querySelectorAll('button').forEach(b=>b.onclick=e=>{e.stopPropagation();
+      fetch('samples/'+b.getAttribute('data-f')).then(r=>r.json()).then(rows=>analyze(rows,b.getAttribute('data-l')));});
+  }).catch(()=>{ document.getElementById('samples').textContent='(run the preview server to load samples)'; });
+
   document.getElementById('pick').onclick=e=>{e.stopPropagation();fileEl.click();};
-  document.getElementById('sample').onclick=e=>{e.stopPropagation();analyze(sampleRows(),'sample.csv');};
   drop.onclick=()=>fileEl.click();
   drop.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();fileEl.click();}});
   fileEl.onchange=()=>fromFile(fileEl.files&&fileEl.files[0]);
