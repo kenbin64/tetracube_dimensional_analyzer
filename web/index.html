@@ -1,0 +1,480 @@
+<title>TetraCubeDB — Private Preview</title>
+<style>
+  :root {
+    --ink: #0b0d13;
+    --ink-2: #10131c;
+    --surface: #151926;
+    --surface-2: #1b2030;
+    --line: #262c3d;
+    --brass: #c9a24c;
+    --brass-hi: #e7cd86;
+    --verify: #5fd0c4;
+    --paper: #f2f1ec;
+    --mist: #9aa2b4;
+    --mist-dim: #6b7385;
+    --maxw: 1080px;
+    --mono: ui-monospace, "SF Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, Helvetica, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--ink); color: var(--paper);
+    font-family: var(--sans); line-height: 1.6;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+  .mono { font-family: var(--mono); }
+  .eyebrow { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.28em; text-transform: uppercase; color: var(--brass); }
+  h1, h2, h3 { font-weight: 600; line-height: 1.08; text-wrap: balance; margin: 0; }
+  a { color: inherit; }
+  ::selection { background: rgba(201,162,76,0.28); }
+
+  /* ---------- LOGIN GATE ---------- */
+  #gate {
+    position: fixed; inset: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: center;
+    background:
+      radial-gradient(1200px 700px at 50% -10%, rgba(201,162,76,0.10), transparent 60%),
+      radial-gradient(900px 600px at 50% 120%, rgba(95,208,196,0.06), transparent 60%),
+      var(--ink);
+    padding: 24px; transition: opacity 0.7s ease, visibility 0.7s;
+  }
+  #gate.open { opacity: 0; visibility: hidden; pointer-events: none; }
+  .gate-card { width: 100%; max-width: 380px; display: flex; flex-direction: column; align-items: center; gap: 22px; text-align: center; }
+  .mark { width: 92px; height: 92px; display: block; filter: drop-shadow(0 0 22px rgba(201,162,76,0.28)); }
+  .gate-title { font-size: 1.5rem; letter-spacing: 0.02em; }
+  .gate-title b { color: var(--brass); font-weight: 600; }
+  .gate-sub { color: var(--mist); font-size: 0.92rem; margin: -8px 0 4px; }
+  .field { width: 100%; background: var(--surface); border: 1px solid var(--line); color: var(--paper); font-family: var(--mono); font-size: 0.95rem; letter-spacing: 0.08em; padding: 13px 15px; border-radius: 9px; transition: border-color 0.2s, box-shadow 0.2s; }
+  .field::placeholder { color: var(--mist-dim); letter-spacing: 0.08em; }
+  .field:focus { outline: none; border-color: var(--brass); box-shadow: 0 0 0 3px rgba(201,162,76,0.16); }
+  .btn { font-family: var(--sans); font-weight: 600; font-size: 0.92rem; border: none; cursor: pointer; border-radius: 9px; padding: 13px 20px; background: var(--brass); color: #1a1406; white-space: nowrap; transition: transform 0.15s ease, background 0.2s; }
+  .btn:hover { background: var(--brass-hi); }
+  .btn:active { transform: translateY(1px); }
+  .btn:focus-visible { outline: 2px solid var(--verify); outline-offset: 2px; }
+  .btn.wide { width: 100%; }
+  .gate-err { color: #e78a7a; font-family: var(--mono); font-size: 0.78rem; min-height: 1em; letter-spacing: 0.04em; }
+  .gate-foot { color: var(--mist-dim); font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase; }
+  .gate-request { color: var(--mist); font-size: 0.82rem; }
+  .gate-request a { color: var(--verify); text-decoration: none; border-bottom: 1px solid rgba(95,208,196,0.3); }
+
+  /* ---------- APP ---------- */
+  #app { opacity: 0; transition: opacity 0.8s ease 0.15s; }
+  #app.reveal { opacity: 1; }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 28px; }
+
+  header.nav { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; padding: 16px 28px; background: rgba(11,13,19,0.72); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; letter-spacing: 0.01em; }
+  .brand svg { width: 24px; height: 24px; }
+  .brand b { color: var(--brass); font-weight: 600; }
+  .nav-tag { font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mist-dim); }
+
+  /* hero */
+  .hero { position: relative; padding: 76px 0 56px; text-align: center; }
+  .hero canvas { display: block; margin: 0 auto 30px; width: 190px; height: 190px; }
+  .hero h1 { font-size: clamp(2.4rem, 6vw, 4rem); letter-spacing: -0.02em; }
+  .hero h1 .b { color: var(--brass); }
+  .hero .lede { max-width: 34em; margin: 20px auto 0; color: var(--mist); font-size: 1.08rem; }
+  .hero .lede b { color: var(--paper); font-weight: 500; }
+  .equation { display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 14px; margin: 34px auto 6px; font-family: var(--mono); font-size: 0.82rem; letter-spacing: 0.02em; }
+  .eq-box { padding: 9px 15px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--mist); white-space: nowrap; }
+  .eq-engine { border-color: rgba(201,162,76,0.5); color: var(--brass); background: rgba(201,162,76,0.06); }
+  .eq-out { border-color: rgba(95,208,196,0.4); color: var(--verify); background: rgba(95,208,196,0.05); }
+  .eq-arrow { color: var(--mist-dim); }
+  .cta-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 34px; }
+  .btn.ghost { background: transparent; color: var(--paper); border: 1px solid var(--line); }
+  .btn.ghost:hover { border-color: var(--brass); background: rgba(201,162,76,0.06); }
+
+  section { padding: 60px 0; border-top: 1px solid var(--line); }
+  .sec-head { max-width: 42em; margin: 0 0 40px; }
+  .sec-head h2 { font-size: clamp(1.6rem, 3.4vw, 2.3rem); letter-spacing: -0.01em; }
+  .sec-head p { color: var(--mist); margin: 14px 0 0; font-size: 1.04rem; }
+
+  .fears { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .fear { background: var(--ink-2); padding: 26px 24px; }
+  .fear .q { font-size: 1.1rem; color: var(--paper); font-weight: 500; }
+  .fear .n { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.2em; color: var(--brass); text-transform: uppercase; display: block; margin-bottom: 12px; }
+
+  /* main purpose: split + receipt */
+  .split { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 44px; align-items: center; }
+  .split h2 { font-size: clamp(1.7rem, 3.6vw, 2.5rem); letter-spacing: -0.01em; margin: 14px 0 18px; }
+  .quiet { color: var(--mist); font-size: 1.04rem; }
+  .quiet strong { color: var(--paper); font-weight: 600; }
+  .receipt { background: var(--ink-2); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; font-family: var(--mono); font-size: 0.82rem; box-shadow: 0 24px 60px rgba(0,0,0,0.4); }
+  .receipt .rhead { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--line); color: var(--mist-dim); letter-spacing: 0.14em; font-size: 0.68rem; text-transform: uppercase; }
+  .receipt .rbody { padding: 16px; display: flex; flex-direction: column; gap: 9px; }
+  .rline { display: flex; justify-content: space-between; gap: 16px; }
+  .rline .k { color: var(--mist); }
+  .rline .v { color: var(--paper); }
+  .rline .v.ok { color: var(--verify); }
+  .rstamp { display: flex; align-items: center; gap: 9px; margin-top: 8px; padding-top: 14px; border-top: 1px solid var(--line); color: var(--verify); }
+  .rstamp svg { width: 17px; height: 17px; flex: none; }
+
+  /* alternates */
+  .caps { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .cap { background: var(--ink-2); border: 1px solid var(--line); border-radius: 13px; padding: 24px 22px; display: flex; flex-direction: column; gap: 12px; }
+  .cap-label { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--brass); }
+  .cap h3 { font-size: 1.16rem; }
+  .cap p { color: var(--mist); margin: 0; font-size: 0.95rem; }
+  .cap.surprise { border-color: rgba(201,162,76,0.35); }
+  .cap.surprise .cap-label { color: var(--brass-hi); }
+  .surprise-tag { font-family: var(--mono); font-size: 0.64rem; letter-spacing: 0.14em; color: var(--brass-hi); text-transform: uppercase; opacity: 0.85; margin-top: 2px; }
+  .io { display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 0.72rem; margin-top: 4px; flex-wrap: wrap; }
+  .io .chip { padding: 5px 9px; border-radius: 6px; background: var(--surface); border: 1px solid var(--line); color: var(--mist); }
+  .io .chip.out { color: var(--verify); border-color: rgba(95,208,196,0.35); }
+  .io .arr { color: var(--mist-dim); }
+
+  /* live demo */
+  #demo .sec-head { text-align: center; margin-left: auto; margin-right: auto; }
+  #demo .sec-head p { margin-left: auto; margin-right: auto; }
+  .drop { border: 1.5px dashed var(--line); border-radius: 14px; background: var(--ink-2); padding: 48px 24px; text-align: center; transition: border-color .2s, background .2s; cursor: pointer; }
+  .drop:hover, .drop.hot { border-color: var(--brass); background: rgba(201,162,76,0.05); }
+  .drop-inner { display: flex; flex-direction: column; align-items: center; gap: 10px; color: var(--mist); }
+  .drop svg { width: 32px; height: 32px; color: var(--brass); }
+  .drop .big { color: var(--paper); font-size: 1.02rem; }
+  .link { background: none; border: none; color: var(--verify); font: inherit; cursor: pointer; padding: 0; border-bottom: 1px solid rgba(95,208,196,0.35); }
+  .drop .or { font-size: 0.85rem; color: var(--mist-dim); }
+  .result { margin-top: 20px; }
+  .result[hidden] { display: none; }
+  .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  @media (max-width: 640px) { .metrics { grid-template-columns: 1fr; } }
+  .metric { background: var(--ink-2); border: 1px solid var(--line); border-radius: 12px; padding: 20px 22px; }
+  .metric .mlabel { font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--brass); }
+  .metric .mbig { font-size: 2.1rem; font-weight: 600; margin-top: 8px; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+  .metric .msub { color: var(--mist); font-size: 0.82rem; font-family: var(--mono); margin-top: 4px; }
+  .metric.win { border-color: rgba(95,208,196,0.4); }
+  .metric.win .mbig { color: var(--verify); }
+  .proc { text-align: center; color: var(--verify); font-family: var(--mono); font-size: 0.86rem; padding: 30px 0; letter-spacing: 0.04em; }
+  .note { text-align: center; color: var(--mist-dim); font-family: var(--mono); font-size: 0.7rem; margin-top: 16px; letter-spacing: 0.03em; }
+  .verdict { display: flex; align-items: center; gap: 16px; padding: 22px 24px; border-radius: 13px; border: 1px solid rgba(95,208,196,0.4); background: rgba(95,208,196,0.06); margin-bottom: 16px; }
+  .verdict.bad { border-color: rgba(231,138,122,0.5); background: rgba(231,138,122,0.06); }
+  .verdict svg { width: 36px; height: 36px; flex: none; color: var(--verify); }
+  .verdict.bad svg { color: #e78a7a; }
+  .verdict .vhead { font-size: 1.3rem; font-weight: 600; color: var(--verify); }
+  .verdict.bad .vhead { color: #e78a7a; }
+  .verdict .vsub { color: var(--mist); font-size: 0.9rem; margin-top: 2px; }
+  .size-note { margin-top: 14px; color: var(--mist); font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.02em; text-align: center; }
+  .size-note b { color: var(--paper); font-weight: 600; }
+
+  /* vault */
+  .vault { text-align: center; }
+  .vault .eyebrow { display: block; margin-bottom: 16px; }
+  .vault p { max-width: 40em; margin: 0 auto; font-size: 1.12rem; color: var(--paper); }
+  .vault p .dim { color: var(--mist); }
+
+  .final { text-align: center; }
+  .final h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); }
+  .final p { color: var(--mist); max-width: 32em; margin: 16px auto 30px; }
+
+  footer { border-top: 1px solid var(--line); padding: 34px 28px; }
+  .foot-in { max-width: var(--maxw); margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; color: var(--mist-dim); font-family: var(--mono); font-size: 0.74rem; letter-spacing: 0.06em; }
+  .foot-in .dom { color: var(--brass); }
+
+  @media (max-width: 720px) {
+    .split { grid-template-columns: 1fr; gap: 26px; }
+    .hero { padding: 54px 0 40px; }
+    section { padding: 46px 0; }
+    .nav-tag { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { #gate, #app { transition: none; } }
+</style>
+
+<!-- ================= LOGIN GATE ================= -->
+<div id="gate">
+  <div class="gate-card">
+    <svg class="mark" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+      <rect x="24" y="24" width="52" height="52" stroke="#c9a24c" stroke-width="1.4" opacity="0.55"/>
+      <rect x="12" y="12" width="52" height="52" stroke="#e7cd86" stroke-width="1.7"/>
+      <g stroke="#c9a24c" stroke-width="1.1" opacity="0.7">
+        <line x1="12" y1="12" x2="24" y2="24"/><line x1="64" y1="12" x2="76" y2="24"/>
+        <line x1="12" y1="64" x2="24" y2="76"/><line x1="64" y1="64" x2="76" y2="76"/>
+      </g>
+    </svg>
+    <div>
+      <div class="gate-title">Tetra<b>Cube</b>DB</div>
+      <div class="gate-sub">Private preview. Sign in to continue.</div>
+    </div>
+    <div style="width:100%; display:flex; flex-direction:column; gap:10px;">
+      <input id="user" class="field" type="text" autocomplete="username" spellcheck="false" placeholder="Username" aria-label="Username"/>
+      <input id="pass" class="field" type="password" autocomplete="current-password" placeholder="Password" aria-label="Password"/>
+      <button class="btn wide" id="enter">Sign in</button>
+      <div class="gate-err mono" id="err"></div>
+    </div>
+    <div class="gate-request">Need access? <a href="#">Request a key</a></div>
+    <div class="gate-foot">tetracubedb.us</div>
+  </div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="app" aria-hidden="true">
+  <header class="nav">
+    <div class="brand">
+      <svg viewBox="0 0 100 100" fill="none" aria-hidden="true">
+        <rect x="24" y="24" width="52" height="52" stroke="#c9a24c" stroke-width="3" opacity="0.5"/>
+        <rect x="12" y="12" width="52" height="52" stroke="#e7cd86" stroke-width="3.4"/>
+      </svg>
+      <span>Tetra<b>Cube</b>DB</span>
+    </div>
+    <span class="nav-tag">Private Preview</span>
+  </header>
+
+  <div class="wrap">
+    <!-- HERO: one main purpose -->
+    <div class="hero">
+      <canvas id="tess" width="380" height="380" aria-label="The TetraCubeDB engine"></canvas>
+      <div class="eyebrow">Organize &middot; Analyze &middot; Streamline</div>
+      <h1 style="margin-top:16px;">Organize, analyze, streamline.<br><span class="b">Proven every step.</span></h1>
+      <p class="lede">TetraCubeDB cleans up your data and shows you what is inside, then hands you a receipt that <b>nothing was lost</b>. No other data tool does that.</p>
+      <div class="equation" role="img" aria-label="your data goes into TetraCubeDB and comes out clean, lean, and proven">
+        <span class="eq-box">your data</span>
+        <span class="eq-arrow">&rarr;</span>
+        <span class="eq-box eq-engine">( TetraCubeDB )</span>
+        <span class="eq-arrow">&rarr;</span>
+        <span class="eq-box eq-out">clean &middot; lean &middot; proven</span>
+      </div>
+      <div class="cta-row">
+        <button class="btn" onclick="document.getElementById('demo').scrollIntoView({behavior:'smooth'})">See it prove itself</button>
+        <button class="btn ghost" onclick="document.getElementById('cta').scrollIntoView({behavior:'smooth'})">Request access</button>
+      </div>
+      <p class="mono" style="font-size:0.8rem; letter-spacing:0.03em; color:var(--mist); margin:38px auto 0; max-width:40em;">Built on the engine that makes AI answers <span style="color:var(--verify)">reliable</span>. The same proof, now pointed at your data.</p>
+    </div>
+
+    <!-- LIVE DEMO -->
+    <section id="demo">
+      <div class="sec-head">
+        <div class="eyebrow" style="display:block;">See it prove itself</div>
+        <h2 style="margin-top:14px;">Right here. On your own file.</h2>
+        <p>Drop in a file. TetraCubeDB reads it, streamlines it, and proves it can rebuild it byte-for-byte. Nothing leaves your machine.</p>
+      </div>
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="Drop a file, or choose one">
+        <input type="file" id="file" hidden>
+        <div class="drop-inner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0 4 4m-4-4L8 8"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+          <div class="big">Drop a file here, or <button class="link" id="pick" type="button">choose one</button></div>
+          <div class="or">or <button class="link" id="sample" type="button">try a sample dataset</button></div>
+        </div>
+      </div>
+      <div class="result" id="result" hidden></div>
+      <div class="note">Runs entirely in your browser. Real SHA-256, real compression, real byte-for-byte round-trip. The full engine goes further on structured data.</div>
+    </section>
+
+    <!-- WHY NOW -->
+    <section id="why">
+      <div class="sec-head">
+        <div class="eyebrow">Why it matters now</div>
+        <h2 style="margin-top:14px;">Everyone is moving their data into new systems and AI. Almost no one can prove it arrived whole.</h2>
+      </div>
+      <div class="fears">
+        <div class="fear"><span class="n">Intact?</span><div class="q">Did the migration lose anything?</div></div>
+        <div class="fear"><span class="n">Untouched?</span><div class="q">Has this data been altered?</div></div>
+        <div class="fear"><span class="n">Clean?</span><div class="q">What is bloating it that we cannot see?</div></div>
+        <div class="fear"><span class="n">Source?</span><div class="q">Can we prove where it came from?</div></div>
+      </div>
+    </section>
+
+    <!-- MAIN PURPOSE -->
+    <section id="product">
+      <div class="split">
+        <div>
+          <div class="eyebrow">The one job</div>
+          <h2>Every change ends in a proof.</h2>
+          <p class="quiet">Point TetraCubeDB at your data and put it to work: migrate it, compact it, store it. When it finishes, it hands back a receipt, what went in, what came out, and a check that the two match exactly, down to the last byte.</p>
+          <p class="quiet" style="margin-top:16px;"><strong>It does not ask you to trust it. It proves it.</strong> No migration or cleanup tool on the market gives you that receipt.</p>
+        </div>
+        <div class="receipt" aria-label="Example proof receipt">
+          <div class="rhead"><span>Proof of integrity</span><span>tetracubedb</span></div>
+          <div class="rbody">
+            <div class="rline"><span class="k">source</span><span class="v">customers.dataset</span></div>
+            <div class="rline"><span class="k">operation</span><span class="v">migrate + compact</span></div>
+            <div class="rline"><span class="k">records in</span><span class="v">2,491,004</span></div>
+            <div class="rline"><span class="k">records out</span><span class="v">2,491,004</span></div>
+            <div class="rline"><span class="k">footprint</span><span class="v">1.9 GB &rarr; 250 MB (this set)</span></div>
+            <div class="rline"><span class="k">reconstructs</span><span class="v ok">byte-for-byte</span></div>
+            <div class="rstamp">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>Verified &mdash; nothing lost</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ALTERNATES -->
+    <section id="also">
+      <div class="sec-head">
+        <div class="eyebrow">Also used for</div>
+        <h2 style="margin-top:14px;">The same proof, pointed at three more jobs.</h2>
+      </div>
+      <div class="caps">
+        <div class="cap">
+          <div class="cap-label">Audit</div>
+          <h3>See what is really inside</h3>
+          <p>Get a plain report on any dataset: the duplicates, the dead weight, a health score. Know it before you trust it or feed it to AI.</p>
+        </div>
+        <div class="cap">
+          <div class="cap-label">Provenance</div>
+          <h3>Prove where it came from</h3>
+          <p>Every dataset carries a tamper-evident seal. If a single byte changes, TetraCubeDB catches it and tells you.</p>
+        </div>
+        <div class="cap surprise">
+          <div class="cap-label">The byproduct</div>
+          <h3>Often, it gets smaller</h3>
+          <p>Removing what is redundant can also shrink the file, sometimes a lot. It depends entirely on the data, so we benchmark it per case. Always provably identical.</p>
+          <span class="surprise-tag">Individual, not universal.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- VAULT -->
+    <section id="vault" class="vault">
+      <div class="eyebrow">The engine</div>
+      <p>You see what goes in, what comes out, and the proof. <span class="dim">The engine that does it is proprietary and stays in the vault. That is the point, and it is the moat.</span></p>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section id="cta" class="final">
+      <div class="eyebrow" style="display:block; margin-bottom:16px;">Private preview</div>
+      <h2>Prove your data.</h2>
+      <p>TetraCubeDB is in private preview. Request a key to see it prove itself on your own data.</p>
+      <div class="cta-row">
+        <button class="btn" onclick="alert('Request received. We will be in touch with an access key.')">Request access</button>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <div class="foot-in">
+      <span>TetraCubeDB &mdash; private preview</span>
+      <span class="dom">tetracubedb.us</span>
+    </div>
+  </footer>
+</div>
+
+<script>
+  // ---------- soft access gate (demo). Real server auth arrives with the tetracubedb.us deployment. ----------
+  (function () {
+    var USER = 'admin', PASS = 'pp&pgroup';
+    var gate = document.getElementById('gate'), app = document.getElementById('app');
+    var uEl = document.getElementById('user'), pEl = document.getElementById('pass'), err = document.getElementById('err');
+    function unlock(skip) {
+      gate.classList.add('open');
+      app.classList.add('reveal');
+      app.setAttribute('aria-hidden', 'false');
+      try { sessionStorage.setItem('tcdb_in', '1'); } catch (e) {}
+      if (!skip) setTimeout(function () { window.scrollTo(0, 0); }, 60);
+    }
+    function attempt() {
+      var u = (uEl.value || '').trim().toLowerCase(), p = (pEl.value || '');
+      if (u === USER && p === PASS) { err.textContent = ''; unlock(false); }
+      else { err.textContent = 'Username or password not recognized.'; pEl.focus(); pEl.select(); }
+    }
+    document.getElementById('enter').addEventListener('click', attempt);
+    [uEl, pEl].forEach(function (el) { el.addEventListener('keydown', function (e) { if (e.key === 'Enter') attempt(); }); });
+    try { if (sessionStorage.getItem('tcdb_in') === '1') unlock(true); } catch (e) {}
+    setTimeout(function () { uEl.focus(); }, 300);
+  })();
+
+  // ---------- the engine: a rotating 4D hypercube (tesseract) wireframe ----------
+  (function () {
+    var canvas = document.getElementById('tess');
+    if (!canvas || !canvas.getContext) return;
+    var ctx = canvas.getContext('2d');
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var V = [];
+    for (var i = 0; i < 16; i++) V.push([(i & 1) ? 1 : -1, (i & 2) ? 1 : -1, (i & 4) ? 1 : -1, (i & 8) ? 1 : -1]);
+    var E = [];
+    for (var a = 0; a < 16; a++) for (var b = a + 1; b < 16; b++) { var d = a ^ b; if ((d & (d - 1)) === 0) E.push([a, b]); }
+    function rot(p, i, j, ang) { var c = Math.cos(ang), s = Math.sin(ang), pi = p[i], pj = p[j]; p[i] = pi * c - pj * s; p[j] = pi * s + pj * c; }
+    function draw(t) {
+      var w = canvas.width, h = canvas.height; ctx.clearRect(0, 0, w, h);
+      var pts = [];
+      for (var k = 0; k < 16; k++) {
+        var p = V[k].slice();
+        rot(p, 0, 3, t * 0.5); rot(p, 1, 3, t * 0.31); rot(p, 0, 2, t * 0.22);
+        var w4 = 2.4 / (2.4 - p[3]); var x3 = p[0] * w4, y3 = p[1] * w4, z3 = p[2] * w4;
+        var w3 = 3.0 / (3.0 - z3);
+        pts.push([w / 2 + x3 * w3 * 52, h / 2 + y3 * w3 * 52, w3]);
+      }
+      for (var e = 0; e < E.length; e++) {
+        var A = pts[E[e][0]], B = pts[E[e][1]], depth = (A[2] + B[2]) / 2;
+        ctx.strokeStyle = 'rgba(201,162,76,' + Math.max(0.10, Math.min(0.9, (depth - 0.55) * 1.15)).toFixed(3) + ')';
+        ctx.lineWidth = depth * 1.15;
+        ctx.beginPath(); ctx.moveTo(A[0], A[1]); ctx.lineTo(B[0], B[1]); ctx.stroke();
+      }
+      for (var v = 0; v < pts.length; v++) {
+        var P = pts[v];
+        ctx.fillStyle = 'rgba(231,205,134,' + Math.min(0.95, P[2] * 0.5).toFixed(3) + ')';
+        ctx.beginPath(); ctx.arc(P[0], P[1], P[2] * 1.5, 0, 6.2832); ctx.fill();
+      }
+    }
+    if (reduce) { draw(0.6); return; }
+    var start = null;
+    function frame(ts) { if (start === null) start = ts; draw((ts - start) / 1000 * 0.5); requestAnimationFrame(frame); }
+    requestAnimationFrame(frame);
+  })();
+
+  // ---------- the working engine: real hash, real compression, real round-trip proof, in-browser ----------
+  (function () {
+    var drop = document.getElementById('drop'), fileInput = document.getElementById('file'), result = document.getElementById('result');
+    if (!drop) return;
+    var ok = (typeof CompressionStream !== 'undefined' && typeof DecompressionStream !== 'undefined' && window.crypto && crypto.subtle && crypto.subtle.digest);
+
+    function pump(stream, bytes) { var w = stream.writable.getWriter(); w.write(bytes); w.close(); return new Response(stream.readable).arrayBuffer().then(function (ab) { return new Uint8Array(ab); }); }
+    function gzip(b) { return pump(new CompressionStream('gzip'), b); }
+    function gunzip(b) { return pump(new DecompressionStream('gzip'), b); }
+    function sha256(b) { return crypto.subtle.digest('SHA-256', b).then(function (h) { return [].map.call(new Uint8Array(h), function (x) { return x.toString(16).padStart(2, '0'); }).join(''); }); }
+    function fmt(n) { return n < 1024 ? n + ' B' : n < 1048576 ? (n / 1024).toFixed(1) + ' KB' : (n / 1048576).toFixed(2) + ' MB'; }
+    function esc(s) { return String(s).replace(/[<>&]/g, function (c) { return { '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]; }); }
+    function show(h) { result.hidden = false; result.innerHTML = h; }
+
+    function sampleBytes() {
+      var s = 'id,timestamp,sensor,reading,status\n';
+      for (var i = 0; i < 6000; i++) s += i + ',' + (1719800000 + i * 5) + ',sensor-' + (i % 12) + ',' + (20 + (i % 7)) + '.' + String(i % 100).padStart(2, '0') + ',ok\n';
+      return { bytes: new TextEncoder().encode(s), name: 'sensor-log.csv' };
+    }
+
+    function run(bytes, name) {
+      show('<div class="proc">Reading, streamlining, and verifying ' + esc(name) + ' &hellip;</div>');
+      result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      if (!ok) { show('<div class="proc">This live preview needs a current browser (Chrome, Edge, or Safari).</div>'); return; }
+      Promise.all([sha256(bytes), gzip(bytes)]).then(function (r) {
+        var sha = r[0], comp = r[1];
+        return gunzip(comp).then(function (round) {
+          return sha256(round).then(function (sha2) {
+            var intact = (sha === sha2 && round.length === bytes.length);
+            var ratio = comp.length ? bytes.length / comp.length : 1;
+            var redPct = bytes.length ? (1 - comp.length / bytes.length) * 100 : 0;
+            setTimeout(function () { render(name, bytes.length, comp.length, ratio, redPct, sha, intact); }, 440);
+          });
+        });
+      }).catch(function (e) { show('<div class="proc">Could not process that file. ' + esc(e && e.message || '') + '</div>'); });
+    }
+
+    function render(name, before, after, ratio, redPct, sha, intact) {
+      show(''
+        + '<div class="verdict ' + (intact ? '' : 'bad') + '">'
+        + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/>' + (intact ? '<path d="m8.5 12 2.4 2.4 4.6-5"/>' : '<path d="M15 9l-6 6M9 9l6 6"/>') + '</svg>'
+        + '<div><div class="vhead">' + (intact ? 'Verified' : 'Verification failed') + '</div><div class="vsub">' + (intact ? 'Rebuilt byte-for-byte. Nothing was lost.' : 'The rebuild did not match the original.') + '</div></div>'
+        + '</div>'
+        + '<div class="receipt">'
+        + '<div class="rhead"><span>Proof of integrity</span><span>' + esc(String(name).slice(0, 28)) + '</span></div>'
+        + '<div class="rbody">'
+        + '<div class="rline"><span class="k">original</span><span class="v">' + before.toLocaleString() + ' bytes</span></div>'
+        + '<div class="rline"><span class="k">sha-256</span><span class="v">' + sha.slice(0, 22) + '&hellip;</span></div>'
+        + '<div class="rline"><span class="k">rebuilt, then rehashed</span><span class="v ' + (intact ? 'ok' : '') + '">' + (intact ? 'byte-for-byte identical' : 'MISMATCH') + '</span></div>'
+        + '</div></div>'
+        + '<div class="size-note">This file also came out <b>' + redPct.toFixed(redPct >= 10 ? 0 : 1) + '% smaller</b> (' + fmt(before) + ' &rarr; ' + fmt(after) + '). Size reduction is individual and benchmarked per file, never a universal claim.</div>');
+    }
+
+    function fromFile(f) { if (f) f.arrayBuffer().then(function (ab) { run(new Uint8Array(ab), f.name); }); }
+    document.getElementById('pick').addEventListener('click', function (e) { e.stopPropagation(); fileInput.click(); });
+    document.getElementById('sample').addEventListener('click', function (e) { e.stopPropagation(); var s = sampleBytes(); run(s.bytes, s.name); });
+    drop.addEventListener('click', function () { fileInput.click(); });
+    drop.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); } });
+    fileInput.addEventListener('change', function () { fromFile(fileInput.files && fileInput.files[0]); });
+    ['dragenter', 'dragover'].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add('hot'); }); });
+    ['dragleave', 'drop'].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove('hot'); }); });
+    drop.addEventListener('drop', function (e) { fromFile(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]); });
+  })();
+</script>

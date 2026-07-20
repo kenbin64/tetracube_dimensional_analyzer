@@ -5,8 +5,10 @@ structure, decomposes it into its dimensions, and rebuilds it byte-for-byte. Eve
 page is backed by a test you can run in under a minute. No network, no framework, no magic.
 
 ```
-79 green checks across 11 receipts, 0 failed
+101 green checks across 13 receipts, 0 failed
 ```
+
+> The flagship product front-end (TetraCubeDB, private preview) lives in [`web/`](web/).
 
 ---
 
@@ -57,13 +59,15 @@ Structureless data stays lossless and simply gains nothing. That honesty is the 
 | Collections | One-to-many (order kept), dedup (shared entity stored once), many-to-many = join = coupling surface. | `test_collections.mjs` (8) |
 | Inheritance / polymorphism | A subtype adds axes; single-table and table-per-class both round-trip identical records. | `test_inheritance.mjs` (10) |
 | Propagation | Change an input, only the local neighborhood recomputes. Cycle-safe. | `test_propagate.mjs` (9) |
+| Self-verifying capsule | Manifest carries sha256 + provenance; a tampered byte or residual is rejected on rebuild. | `test_capsule.mjs` (7) |
+| File-type guard + adoption bar | Report-only for order-sensitive formats, decode media, skip opaque binaries; adopt only on a wide win over the incumbent codec. | `test_policy.mjs` (15) |
 
 ## Run it yourself
 
 Requires Node 18+ and nothing else.
 
 ```bash
-npm test            # runs all 11 receipts, prints the table above, exits nonzero on any failure
+npm test            # runs all 13 receipts, prints the table above, exits nonzero on any failure
 ```
 
 Or run any single proof directly:
