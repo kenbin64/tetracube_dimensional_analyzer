@@ -1,0 +1,240 @@
+<title>TetraCubeDB — Workspace</title>
+<style>
+  :root{
+    --ink:#0b0d13; --ink-2:#10131c; --surface:#151926; --surface-2:#1b2030; --line:#262c3d;
+    --brass:#c9a24c; --brass-hi:#e7cd86; --verify:#5fd0c4; --paper:#f2f1ec; --mist:#9aa2b4;
+    --mist-dim:#6b7385; --bad:#e78a7a;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box} html,body{margin:0;padding:0}
+  body{background:var(--ink);color:var(--paper);font-family:var(--sans);line-height:1.55;-webkit-font-smoothing:antialiased}
+  .mono{font-family:var(--mono)}
+  a{color:var(--verify)}
+  header.nav{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:rgba(11,13,19,.8);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600}
+  .brand b{color:var(--brass)}
+  .brand svg{width:22px;height:22px}
+  .nav-tag{font-family:var(--mono);font-size:.64rem;letter-spacing:.2em;text-transform:uppercase;color:var(--mist-dim)}
+  .wrap{max-width:1120px;margin:0 auto;padding:26px 24px 80px}
+
+  .drop{border:1.5px dashed var(--line);border-radius:14px;background:var(--ink-2);padding:40px 24px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s}
+  .drop:hover,.drop.hot{border-color:var(--brass);background:rgba(201,162,76,.05)}
+  .drop svg{width:30px;height:30px;color:var(--brass)}
+  .drop .big{color:var(--paper);font-size:1.02rem;margin-top:8px}
+  .drop .or{font-size:.85rem;color:var(--mist-dim);margin-top:6px}
+  .link{background:none;border:none;color:var(--verify);font:inherit;cursor:pointer;padding:0;border-bottom:1px solid rgba(95,208,196,.35)}
+
+  .out{margin-top:24px}
+  .out[hidden]{display:none}
+  .headline{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+  .headline h2{font-size:1.5rem;font-weight:600;margin:0;letter-spacing:-.01em}
+  .headline .fn{font-family:var(--mono);color:var(--mist);font-size:.85rem}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+  .card{background:var(--ink-2);border:1px solid var(--line);border-radius:13px;padding:18px 18px}
+  .card .lab{font-family:var(--mono);font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;color:var(--brass);margin-bottom:8px}
+  .card .big{font-size:1.7rem;font-weight:600;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+  .card .sub{color:var(--mist);font-size:.86rem;margin-top:3px}
+  .card.win{border-color:rgba(95,208,196,.35)} .card.win .big{color:var(--verify)}
+
+  .panel{background:var(--ink-2);border:1px solid var(--line);border-radius:13px;margin-top:16px;overflow:hidden}
+  .panel .ph{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line)}
+  .panel .ph h3{margin:0;font-size:1.02rem;font-weight:600}
+  .panel .ph .hint{color:var(--mist-dim);font-family:var(--mono);font-size:.7rem;letter-spacing:.04em}
+  .pb{padding:16px 18px}
+
+  .rels{display:flex;flex-direction:column;gap:10px}
+  .rel{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:.94rem}
+  .pill{font-family:var(--mono);font-size:.8rem;padding:4px 9px;border-radius:7px;background:var(--surface);border:1px solid var(--line);color:var(--paper)}
+  .pill.ent{border-color:rgba(201,162,76,.45);color:var(--brass-hi);background:rgba(201,162,76,.06)}
+  .rel .arr{color:var(--mist-dim)}
+  .rel .desc{color:var(--mist);font-size:.85rem}
+  .empty{color:var(--mist-dim);font-size:.88rem}
+
+  /* instant lookup */
+  .lookup{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .sel,.inp{background:var(--surface);border:1px solid var(--line);color:var(--paper);font-family:var(--mono);font-size:.86rem;padding:9px 11px;border-radius:8px}
+  .sel:focus,.inp:focus{outline:none;border-color:var(--brass)}
+  .btn{font-family:var(--sans);font-weight:600;font-size:.86rem;border:none;cursor:pointer;border-radius:8px;padding:9px 15px;background:var(--brass);color:#1a1406}
+  .btn:hover{background:var(--brass-hi)}
+  .btn.ghost{background:transparent;color:var(--paper);border:1px solid var(--line)}
+  .hit{margin-top:14px}
+  .hit .addr{font-family:var(--mono);font-size:.74rem;color:var(--verify);letter-spacing:.03em;margin-bottom:8px}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:6px 18px;font-family:var(--mono);font-size:.86rem}
+  .kv .k{color:var(--mist)} .kv .v{color:var(--paper)}
+
+  /* data table */
+  .tblwrap{overflow:auto;max-height:420px;border-top:1px solid var(--line)}
+  table{border-collapse:collapse;width:100%;font-family:var(--mono);font-size:.8rem}
+  th,td{text-align:left;padding:7px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+  th{position:sticky;top:0;background:var(--surface-2);color:var(--brass);font-weight:600;letter-spacing:.02em;z-index:1}
+  th .k{font-size:.6rem;color:var(--mist-dim);display:block;letter-spacing:.12em;text-transform:uppercase}
+  td{color:var(--paper)} tr:hover td{background:rgba(201,162,76,.04)}
+  td.num{color:var(--verify);text-align:right}
+
+  /* proof */
+  .proof{display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:13px;margin-top:16px;border:1px solid rgba(95,208,196,.4);background:rgba(95,208,196,.06)}
+  .proof.bad{border-color:rgba(231,138,122,.5);background:rgba(231,138,122,.06)}
+  .proof svg{width:30px;height:30px;flex:none;color:var(--verify)} .proof.bad svg{color:var(--bad)}
+  .proof .h{font-size:1.05rem;font-weight:600;color:var(--verify)} .proof.bad .h{color:var(--bad)}
+  .proof .s{color:var(--mist);font-size:.84rem;margin-top:2px}
+  .proc{color:var(--verify);font-family:var(--mono);font-size:.9rem;padding:26px 0;text-align:center}
+  .foot{color:var(--mist-dim);font-family:var(--mono);font-size:.7rem;text-align:center;margin-top:26px}
+</style>
+
+<header class="nav">
+  <div class="brand">
+    <svg viewBox="0 0 100 100" fill="none"><rect x="24" y="24" width="52" height="52" stroke="#c9a24c" stroke-width="3" opacity=".5"/><rect x="12" y="12" width="52" height="52" stroke="#e7cd86" stroke-width="3.4"/></svg>
+    <span>Tetra<b>Cube</b>DB</span>
+  </div>
+  <span class="nav-tag">Workspace</span>
+</header>
+
+<div class="wrap">
+  <div class="drop" id="drop" tabindex="0" role="button" aria-label="Add a dataset">
+    <input type="file" id="file" accept=".csv,.json,text/csv,application/json" hidden>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0 4 4m-4-4L8 8"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+    <div class="big">Drop a dataset (CSV or JSON), or <button class="link" id="pick" type="button">choose one</button></div>
+    <div class="or">or <button class="link" id="sample" type="button">load a sample</button> &middot; nothing leaves your machine</div>
+  </div>
+
+  <div class="out" id="out" hidden></div>
+  <div class="foot">TetraCubeDB &middot; runs entirely on your machine &middot; tetracubedb.us</div>
+</div>
+
+<script type="module">
+  import { analyzeDataset, parseCSV } from '../src/index.mjs';
+
+  const drop = document.getElementById('drop'), fileEl = document.getElementById('file'), out = document.getElementById('out');
+  let DATA = null, REPORT = null;
+
+  const esc = s => String(s).replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+  const isNum = v => v!==null && v!=='' && v!==undefined && Number.isFinite(Number(v));
+
+  function sampleRows(){
+    // A clean sample: a customer ENTITY (customer_id -> name, tier) that repeats, an INDEPENDENT
+    // status (period 5, coprime with the 6 customers, so nothing spuriously determines it), and a
+    // compressible measure. No accidental relationships.
+    const cust = {
+      101:['Acme','gold'], 102:['Globex','silver'], 103:['Initech','gold'],
+      104:['Umbra','bronze'], 105:['Soylent','silver'], 106:['Hooli','gold'],
+    };
+    const ids = Object.keys(cust);
+    const status = ['open','packed','shipped','delivered','returned'];
+    const rows=[];
+    for(let i=0;i<60;i++){
+      const cid = ids[i%6];
+      rows.push({ order_id:5000+i, customer_id:Number(cid), customer_name:cust[cid][0],
+        tier:cust[cid][1], status:status[i%5], units:10+3*i });
+    }
+    return rows;
+  }
+
+  function analyze(rows, name){
+    DATA = rows;
+    out.hidden=false; out.innerHTML='<div class="proc">Organizing '+esc(name)+' &hellip;</div>';
+    setTimeout(()=>{ try{ REPORT = analyzeDataset(rows); render(name); }catch(e){ out.innerHTML='<div class="proc">Could not read that file. '+esc(e.message||'')+'</div>'; } }, 260);
+  }
+
+  // ---- translate the engine's geometry into plain OUTCOME language (no internals on screen) ----
+  function entitiesFromForm(form){
+    // collapse mutually-determining apexes (bijective) into one named entity; drop measure/key noise
+    const seen = new Set(), ents = [];
+    for(const c of form.capstones){
+      const members = [c.apex, ...c.gathers].sort();
+      const sig = members.join('|'); if(seen.has(sig)) continue; seen.add(sig);
+      ents.push({ name: c.apex.replace(/_id$/,'') || c.apex, key:c.apex, fields:c.gathers });
+    }
+    return ents;
+  }
+
+  function render(name){
+    const r = REPORT, rec = r.receipt;
+    const ents = entitiesFromForm(r.form);
+    // relationships worth showing separately = couplings NOT already inside a found entity
+    const entMembers = ents.map(e=>new Set([e.key, ...e.fields]));
+    const inSameEntity = (a,b)=>entMembers.some(m=>m.has(a)&&m.has(b));
+    const rels = r.couplings.filter(c=>!r.candidateKeys.includes(c.from) && !inSameEntity(c.from,c.to));
+    const patternCols = r.columns.filter(c=>c.kind==='numeric' && c.rule && c.rule!=='raw');
+    const dedupPct = rec.cellsRaw ? Math.max(0, Math.round((1-rec.cellsSeeded/rec.cellsRaw)*100)) : 0;
+
+    out.innerHTML = ''
+      + '<div class="headline"><h2>Here is what is inside '+esc(name)+'</h2><span class="fn">'+r.rows.toLocaleString()+' records &middot; '+r.columns.length+' fields</span></div>'
+      + '<div class="cards">'
+        + card('Records', r.rows.toLocaleString(), 'organized, no duplication')
+        + card('Entities found', String(ents.length), ents.length?('e.g. '+esc(ents[0].name)):'none detected')
+        + card('Relationships', String(rels.length), 'discovered automatically')
+        + card('Footprint', (dedupPct>0?('-'+dedupPct+'%'):'flat'), dedupPct>0?'redundancy removed':'little to compress', dedupPct>0)
+      + '</div>'
+
+      // discovered entities + relationships, plain language
+      + panel('What connects to what', 'found automatically, nothing declared',
+          (ents.length||rels.length)
+            ? '<div class="rels">'
+              + ents.map(e=>'<div class="rel"><span class="pill ent">'+esc(e.name)+'</span><span class="desc">is one thing, stored once &mdash; '+e.fields.map(esc).join(', ')+' travel with it (deduplicated)</span></div>').join('')
+              + rels.map(c=>'<div class="rel"><span class="pill">'+esc(c.from)+'</span><span class="arr">&rarr;</span><span class="pill">'+esc(c.to)+'</span><span class="desc">'+esc(c.from)+' decides '+esc(c.to)+'</span></div>').join('')
+              + '</div>'
+            : '<div class="empty">No hidden relationships in this set; the fields are independent.</div>')
+
+      // instant lookup by coordinate
+      + panel('Instant lookup', 'jump straight to any value',
+          '<div class="lookup">'
+          + 'Field <select class="sel" id="luf">'+r.columns.map(c=>'<option>'+esc(c.name)+'</option>').join('')+'</select>'
+          + 'equals <input class="inp" id="luv" placeholder="value" style="width:150px">'
+          + '<button class="btn" id="lugo">Retrieve</button>'
+          + '<button class="btn ghost" id="lurow">Row #</button>'
+          + '</div><div class="hit" id="hit"></div>')
+
+      // the data, familiar
+      + '<div class="panel"><div class="ph"><h3>Your data</h3><span class="hint">first '+Math.min(DATA.length,200)+' rows</span></div>'
+        + tableHTML(r) + '</div>'
+
+      // proof (the receipt, plain)
+      + '<div class="proof'+(rec.lossless?'':' bad')+'">'
+        + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/>'+(rec.lossless?'<path d="m8.5 12 2.4 2.4 4.6-5"/>':'<path d="M15 9l-6 6M9 9l6 6"/>')+'</svg>'
+        + '<div><div class="h">'+(rec.lossless?'Verified &mdash; nothing was lost':'Verification failed')+'</div>'
+        + '<div class="s">'+(rec.lossless?'Rebuilt and re-checked against the original. Every record matches, exactly.':'The rebuild did not match the original.')+'</div></div></div>';
+
+    wireLookup();
+  }
+
+  function card(lab,big,sub,win){ return '<div class="card'+(win?' win':'')+'"><div class="lab">'+lab+'</div><div class="big">'+big+'</div><div class="sub">'+sub+'</div></div>'; }
+  function panel(title,hint,body){ return '<div class="panel"><div class="ph"><h3>'+title+'</h3><span class="hint">'+hint+'</span></div><div class="pb">'+body+'</div></div>'; }
+
+  function tableHTML(r){
+    const names = r.columns.map(c=>c.name);
+    const rows = DATA.slice(0,200);
+    let h='<div class="tblwrap"><table><thead><tr>';
+    for(const c of r.columns){ const role = r.candidateKeys.includes(c.name)?'address':(c.dim==='surface'?'linked':(c.kind==='numeric'?'measure':'field')); h+='<th>'+esc(c.name)+'<span class="k">'+role+'</span></th>'; }
+    h+='</tr></thead><tbody>';
+    for(const row of rows){ h+='<tr>'; for(const n of names){ const v=row[n]; h+='<td'+(isNum(v)?' class="num"':'')+'>'+esc(v===null||v===undefined?'':v)+'</td>'; } h+='</tr>'; }
+    return h+'</tbody></table></div>';
+  }
+
+  function wireLookup(){
+    const go=document.getElementById('lugo'), rowBtn=document.getElementById('lurow'), hit=document.getElementById('hit');
+    const showRec=(addr,rec)=>{ hit.innerHTML='<div class="addr">'+esc(addr)+'</div><div class="kv">'+Object.entries(rec).map(([k,v])=>'<div class="k">'+esc(k)+'</div><div class="v">'+esc(v===null?'':v)+'</div>').join('')+'</div>'; };
+    go.onclick=()=>{ const f=document.getElementById('luf').value, v=document.getElementById('luv').value;
+      const idx=DATA.findIndex(r=>String(r[f])===String(v));
+      if(idx<0){ hit.innerHTML='<div class="empty">No record where '+esc(f)+' = '+esc(v)+'.</div>'; return; }
+      showRec('['+f+' = '+v+']  &rarr; record #'+idx, DATA[idx]); };
+    rowBtn.onclick=()=>{ const v=document.getElementById('luv').value, i=parseInt(v,10);
+      if(!Number.isInteger(i)||i<0||i>=DATA.length){ hit.innerHTML='<div class="empty">Enter a row number 0&ndash;'+(DATA.length-1)+' in the value box.</div>'; return; }
+      showRec('[row '+i+']', DATA[i]); };
+  }
+
+  function fromFile(f){ if(!f) return; f.text().then(t=>{ let rows; const nm=f.name||'dataset';
+    if(/\.json$/i.test(nm)||t.trim().startsWith('[')){ const j=JSON.parse(t); rows=Array.isArray(j)?j:(j.rows||j.data||[]); }
+    else rows=parseCSV(t);
+    analyze(rows, nm); }); }
+
+  document.getElementById('pick').onclick=e=>{e.stopPropagation();fileEl.click();};
+  document.getElementById('sample').onclick=e=>{e.stopPropagation();analyze(sampleRows(),'sample.csv');};
+  drop.onclick=()=>fileEl.click();
+  drop.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();fileEl.click();}});
+  fileEl.onchange=()=>fromFile(fileEl.files&&fileEl.files[0]);
+  ['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('hot');}));
+  ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('hot');}));
+  drop.addEventListener('drop',e=>fromFile(e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0]));
+</script>
