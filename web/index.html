@@ -223,9 +223,9 @@
     <!-- HERO: one main purpose -->
     <div class="hero">
       <canvas id="tess" width="380" height="380" aria-label="The TetraCubeDB engine"></canvas>
-      <div class="eyebrow">Organize &middot; Analyze &middot; Streamline</div>
-      <h1 style="margin-top:16px;">Organize, analyze, streamline.<br><span class="b">Proven every step.</span></h1>
-      <p class="lede">TetraCubeDB cleans up your data and shows you what is inside, then hands you a receipt that <b>nothing was lost</b>. No other data tool does that.</p>
+      <div class="eyebrow">The non-AI AI</div>
+      <h1 style="margin-top:16px;">The intelligence of AI.<br><span class="b">None of the guessing.</span></h1>
+      <p class="lede">TetraCubeDB finds the connections in your data, organizes it, and clears out the duplicates, then <b>proves nothing was lost</b>. No model. No cloud. No hallucinations. It runs on your machine.</p>
       <div class="equation" role="img" aria-label="your data goes into TetraCubeDB and comes out clean, lean, and proven">
         <span class="eq-box">your data</span>
         <span class="eq-arrow">&rarr;</span>
@@ -234,10 +234,10 @@
         <span class="eq-box eq-out">clean &middot; lean &middot; proven</span>
       </div>
       <div class="cta-row">
-        <button class="btn" onclick="document.getElementById('demo').scrollIntoView({behavior:'smooth'})">See it prove itself</button>
+        <button class="btn" onclick="location.href='app.html'">Open the workspace</button>
         <button class="btn ghost" onclick="document.getElementById('cta').scrollIntoView({behavior:'smooth'})">Request access</button>
       </div>
-      <p class="mono" style="font-size:0.8rem; letter-spacing:0.03em; color:var(--mist); margin:38px auto 0; max-width:40em;">Built on the engine that makes AI answers <span style="color:var(--verify)">reliable</span>. The same proof, now pointed at your data.</p>
+      <p class="mono" style="font-size:0.8rem; letter-spacing:0.03em; color:var(--mist); margin:38px auto 0; max-width:40em;">All the insight, <span style="color:var(--verify)">none of the guessing</span>. It is math, not a model, so every answer is deterministic, private, and provable.</p>
     </div>
 
     <!-- LIVE DEMO -->
@@ -247,16 +247,14 @@
         <h2 style="margin-top:14px;">Right here. On your own file.</h2>
         <p>Drop in a file. TetraCubeDB reads it, streamlines it, and proves it can rebuild it byte-for-byte. Nothing leaves your machine.</p>
       </div>
-      <div class="drop" id="drop" tabindex="0" role="button" aria-label="Drop a file, or choose one">
-        <input type="file" id="file" hidden>
+      <div class="drop" role="button" tabindex="0" aria-label="Open the workspace" onclick="location.href='app.html'" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();location.href='app.html'}">
         <div class="drop-inner">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0 4 4m-4-4L8 8"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
-          <div class="big">Drop a file here, or <button class="link" id="pick" type="button">choose one</button></div>
-          <div class="or">or <button class="link" id="sample" type="button">try a sample dataset</button></div>
+          <div class="big">Open the workspace &mdash; drop in your own data, or try public samples</div>
+          <div class="or">movies &middot; books &middot; stocks &middot; world cities &mdash; watch it find the structure</div>
         </div>
       </div>
-      <div class="result" id="result" hidden></div>
-      <div class="note">Runs entirely in your browser. Real SHA-256, real compression, real byte-for-byte round-trip. The full engine goes further on structured data.</div>
+      <div class="note">Runs entirely in your browser. It finds the entities and relationships, clears duplication, and proves the rebuild is byte-for-byte identical. No model, no cloud, nothing leaves your machine.</div>
     </section>
 
     <!-- WHY NOW -->
