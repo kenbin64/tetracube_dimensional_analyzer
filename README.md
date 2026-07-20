@@ -5,7 +5,7 @@ structure, decomposes it into its dimensions, and rebuilds it byte-for-byte. Eve
 page is backed by a test you can run in under a minute. No network, no framework, no magic.
 
 ```
-128 green checks across 15 receipts, 0 failed
+137 green checks across 16 receipts, 0 failed
 ```
 
 > **Using this from another agent?** It reads task descriptions **deterministically**, with no AI in the loop, which is exactly the point when the tasks are built to stymie AI. See [`AGENTS.md`](AGENTS.md).
@@ -52,6 +52,7 @@ Structureless data stays lossless and simply gains nothing. That honesty is the 
 |---|---|---|
 | Flat record ↔ table row | A record is a point; a table is a surface. Round-trips SHA-clean. | `test_roundtrip_flat.mjs` (8) |
 | Seed / bloom | Rule + residual. Lossless on structure **and** on noise. | `test_seedbloom_fib.mjs` (6) |
+| Polynomial rules (finite differences) | Degree-2/3 runs (squares, cubes, any low-degree polynomial) collapse to their base terms; integer-exact, still lossless, still 1.0x on non-polynomial data. | `test_polynomial.mjs` (11) |
 | Skin and recurse | A skinned unit is a point one level up; lossless at every rung. | `test_ladder.mjs` (6) |
 | Honest benchmark | Wins on structure, **1.0x on random**, zero nowhere, lossless everywhere. | `benchmark.mjs` (4) |
 | Benchmark on real bytes | Sorted/counter/run columns win big; text, true-random, and already-gzipped bytes read ~1.0x. | `benchmark_bytes.mjs` (5) |
@@ -71,7 +72,7 @@ Structureless data stays lossless and simply gains nothing. That honesty is the 
 Requires Node 18+ and nothing else.
 
 ```bash
-npm test            # runs all 15 receipts, prints the table above, exits nonzero on any failure
+npm test            # runs all 16 receipts, prints the table above, exits nonzero on any failure
 ```
 
 Or run any single proof directly:

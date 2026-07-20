@@ -64,7 +64,13 @@ export function structureScore(s) {
 // `order` terms. Fibonacci is sum-last-2; constant repeats; arithmetic extrapolates the last step.
 export const constRule = register({ name: 'const', version: 1, order: 1, predict: (p) => p[p.length - 1] });
 export const arithRule = register({ name: 'arith', version: 1, order: 2, predict: (p) => 2 * p[p.length - 1] - p[p.length - 2] });
-export const repertoire = [constRule, arithRule, fibRule];
+// Finite-difference extrapolators: a degree-d polynomial has a constant d-th difference, so the next
+// term is an exact integer combination of the last d+1 terms (binomial coefficients). arith is d=1;
+// these add d=2 and d=3, so squares, cubes, and any low-degree polynomial run collapse to their base
+// terms with an all-zero residual. Integer-exact, so the lossless guarantee is untouched.
+export const quadRule = register({ name: 'quad', version: 1, order: 3, predict: (p) => 3 * p[p.length - 1] - 3 * p[p.length - 2] + p[p.length - 3] });
+export const cubicRule = register({ name: 'cubic', version: 1, order: 4, predict: (p) => 4 * p[p.length - 1] - 6 * p[p.length - 2] + 4 * p[p.length - 3] - p[p.length - 4] });
+export const repertoire = [constRule, arithRule, fibRule, quadRule, cubicRule];
 
 // Seed size in "cells": the base terms + the NONZERO residual entries (a sparse residual) + 1 rule id.
 // A well-fit rule leaves few nonzero residuals, so its seed is small; a wrong rule stores everything.
