@@ -81,7 +81,30 @@
   .proof .s{color:var(--mist);font-size:.84rem;margin-top:2px}
   .proc{color:var(--verify);font-family:var(--mono);font-size:.9rem;padding:26px 0;text-align:center}
   .foot{color:var(--mist-dim);font-family:var(--mono);font-size:.7rem;text-align:center;margin-top:26px}
+  /* preview gate (soft, client-side; real auth is server-side on the VPS before public launch) */
+  #gate{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:24px;transition:opacity .45s,visibility .45s;background:radial-gradient(1200px 700px at 50% -10%,rgba(201,162,76,.10),transparent 60%),var(--ink)}
+  #gate.open{opacity:0;visibility:hidden;pointer-events:none}
+  .gate-card{width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center}
+  .gate-title{font-size:1.4rem;font-weight:600}.gate-title b{color:var(--brass)}
+  .gate-sub{color:var(--mist);font-size:.9rem;margin-top:-6px}
+  .field{width:100%;background:var(--surface);border:1px solid var(--line);color:var(--paper);font-family:var(--mono);font-size:.92rem;letter-spacing:.06em;padding:12px 14px;border-radius:9px}
+  .field:focus{outline:none;border-color:var(--brass)}
+  .gate-err{color:var(--bad);font-family:var(--mono);font-size:.76rem;min-height:1em}
+  .gate-foot{color:var(--mist-dim);font-family:var(--mono);font-size:.68rem;letter-spacing:.18em;text-transform:uppercase}
 </style>
+
+<div id="gate">
+  <div class="gate-card">
+    <div><div class="gate-title">Tetra<b>Cube</b>DB</div><div class="gate-sub">Private preview. Sign in to continue.</div></div>
+    <div style="width:100%;display:flex;flex-direction:column;gap:10px">
+      <input id="user" class="field" type="text" autocomplete="username" spellcheck="false" placeholder="Username" aria-label="Username">
+      <input id="pass" class="field" type="password" autocomplete="current-password" placeholder="Password" aria-label="Password">
+      <button class="btn" id="enter" style="width:100%">Sign in</button>
+      <div class="gate-err" id="err"></div>
+    </div>
+    <div class="gate-foot">tetracubedb.us</div>
+  </div>
+</div>
 
 <header class="nav">
   <div class="brand">
@@ -102,6 +125,22 @@
   <div class="out" id="out" hidden></div>
   <div class="foot">TetraCubeDB &middot; runs entirely on your machine &middot; tetracubedb.us</div>
 </div>
+
+<script>
+  // Soft preview gate, shared with index.html via the same-origin session (sign in once). NOT real
+  // security: credentials live in the page. Server-side auth on the VPS replaces this before launch.
+  (function(){
+    var USER='admin', PASS='pp&pgroup';
+    var gate=document.getElementById('gate'), uEl=document.getElementById('user'), pEl=document.getElementById('pass'), err=document.getElementById('err');
+    function unlock(){ gate.classList.add('open'); try{ sessionStorage.setItem('tcdb_in','1'); }catch(e){} }
+    function attempt(){ var u=(uEl.value||'').trim().toLowerCase(), p=(pEl.value||'');
+      if(u===USER && p===PASS){ err.textContent=''; unlock(); } else { err.textContent='Username or password not recognized.'; pEl.focus(); pEl.select(); } }
+    document.getElementById('enter').addEventListener('click', attempt);
+    [uEl,pEl].forEach(function(el){ el.addEventListener('keydown', function(e){ if(e.key==='Enter') attempt(); }); });
+    try{ if(sessionStorage.getItem('tcdb_in')==='1') unlock(); }catch(e){}
+    setTimeout(function(){ uEl.focus(); }, 200);
+  })();
+</script>
 
 <script type="module">
   import { analyzeDataset, parseCSV } from '../src/index.mjs';
