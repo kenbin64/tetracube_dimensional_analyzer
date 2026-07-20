@@ -244,6 +244,7 @@
       + '</div>'
       + trendPanel(rows)
       + compressionPanel()
+      + reportPanel()
       + dataPanel(rows);
 
     wire();
@@ -260,6 +261,63 @@
     return '<div class="panel"><div class="ph"><h3>Analyze</h3><span class="hint">structure of the current slice</span></div><div class="pb">'
       + '<button class="btn ghost" id="ango">Analyze this slice</button><div class="an" id="anout"></div></div></div>';
   }
+
+  // ---- report builder: inline-SVG charts (bar/line/pie), branding, classification, print-to-PDF ----
+  const PAL = ['#c9a24c','#5fd0c4','#8a7bd8','#e0885f','#6fae6f','#d86f9c','#7b9fd8','#c0b060'];
+  function barSVG(data){
+    if(!data.length) return '';
+    const W=560,H=240,pad=34,bw=(W-2*pad)/data.length,max=Math.max(...data.map(d=>d.value))||1; let s='';
+    data.forEach((d,i)=>{ const h=(d.value/max)*(H-2*pad),x=pad+i*bw+bw*0.15,y=H-pad-h,w=bw*0.7;
+      s+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+h.toFixed(1)+'" rx="2" fill="#c9a24c"/>'
+       + '<text x="'+(x+w/2).toFixed(1)+'" y="'+(y-4).toFixed(1)+'" text-anchor="middle" font-size="11" fill="#333">'+d.value+'</text>'
+       + '<text x="'+(x+w/2).toFixed(1)+'" y="'+(H-pad+15).toFixed(1)+'" text-anchor="middle" font-size="10" fill="#666">'+esc(String(d.label)).slice(0,12)+'</text>'; });
+    return '<svg viewBox="0 0 '+W+' '+H+'" width="100%"><line x1="'+pad+'" y1="'+(H-pad)+'" x2="'+(W-pad)+'" y2="'+(H-pad)+'" stroke="#ddd"/>'+s+'</svg>';
+  }
+  function pieSVG(data){
+    if(!data.length) return '';
+    const total=data.reduce((s,d)=>s+d.value,0)||1,cx=110,cy=110,r=100; let a=-Math.PI/2,sl='',lg='';
+    data.forEach((d,i)=>{ const ang=(d.value/total)*2*Math.PI,x1=cx+r*Math.cos(a),y1=cy+r*Math.sin(a); a+=ang; const x2=cx+r*Math.cos(a),y2=cy+r*Math.sin(a),lrg=ang>Math.PI?1:0;
+      sl+='<path d="M'+cx+','+cy+' L'+x1.toFixed(1)+','+y1.toFixed(1)+' A'+r+','+r+' 0 '+lrg+' 1 '+x2.toFixed(1)+','+y2.toFixed(1)+' Z" fill="'+PAL[i%PAL.length]+'"/>';
+      lg+='<div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#333"><span style="width:11px;height:11px;background:'+PAL[i%PAL.length]+';display:inline-block;border-radius:2px"></span>'+esc(String(d.label))+' ('+d.value+')</div>'; });
+    return '<div style="display:flex;gap:22px;align-items:center;flex-wrap:wrap"><svg viewBox="0 0 220 220" width="200" height="200">'+sl+'</svg><div style="display:flex;flex-direction:column;gap:5px">'+lg+'</div></div>';
+  }
+  function lineSVG(ys){
+    if(ys.length<2) return '';
+    const W=560,H=200,p=30,lo=Math.min(...ys),hi=Math.max(...ys),span=(hi-lo)||1;
+    const pts=ys.map((y,i)=>((p+(i/(ys.length-1))*(W-2*p)).toFixed(1))+','+((H-p-((y-lo)/span)*(H-2*p)).toFixed(1))).join(' ');
+    return '<svg viewBox="0 0 '+W+' '+H+'" width="100%"><polyline points="'+pts+'" fill="none" stroke="#5fd0c4" stroke-width="2"/><text x="'+p+'" y="14" font-size="10" fill="#666">high '+hi+'</text><text x="'+p+'" y="'+(H-6)+'" font-size="10" fill="#666">low '+lo+'</text></svg>';
+  }
+  function reportPanel(){
+    return '<div class="panel"><div class="ph"><h3>Report</h3><span class="hint">charts, classification, export to PDF</span></div><div class="pb">'
+      + '<div class="lookrow">Classification <select class="sel" id="rcls"><option>Unclassified</option><option>Public</option><option>Internal</option><option>Confidential</option><option>Restricted</option></select>'
+      + '<button class="btn" id="rgo">Create report</button></div>'
+      + '<div class="sub" style="color:var(--mist-dim);margin-top:8px;font-size:.82rem">A formatted report with bar, line, and pie charts, opens ready to print or save as PDF.</div></div></div>';
+  }
+  window.tcReport = ()=>{
+    const rows=slice(), cls=(document.getElementById('rcls')||{}).value||'Unclassified';
+    const dim=facets()[0], mem=dim?members(dim.name,rows).slice(0,8):[];
+    const bar=barSVG(mem.map(m=>({label:m.value,value:m.count}))), pie=pieSVG(mem.map(m=>({label:m.value,value:m.count})));
+    const measCol=REPORT.columns.find(c=>c.kind==='numeric'&&rows.some(r=>{const n=Number(r[c.name]);return Number.isFinite(n)&&!Number.isInteger(n);})) || REPORT.columns.filter(c=>c.kind==='numeric'&&!REPORT.candidateKeys.includes(c.name)).sort((a,b)=>b.distinct-a.distinct)[0];
+    const line=measCol?lineSVG(rows.map(r=>Number(r[measCol.name])).filter(Number.isFinite)):'';
+    const rec=REPORT.receipt, ratio=rec.cellsSeeded?rec.cellsRaw/rec.cellsSeeded:1, nx=ratio>=10?Math.round(ratio):ratio.toFixed(1);
+    const title=esc(NAME)+(DRILL.length?(' &mdash; '+DRILL.map(d=>esc(d.dim)+': '+esc(d.value)).join(', ')):'');
+    const band=cls==='Unclassified'?'':'<div class="cls">'+esc(cls.toUpperCase())+'</div>';
+    const doc='<!doctype html><html><head><meta charset="utf-8"><title>'+title+' report</title><style>'
+      +'body{font-family:-apple-system,Segoe UI,Arial,sans-serif;color:#1a1a1a;margin:0;background:#fff}'
+      +'.cls{background:#b00020;color:#fff;text-align:center;font-weight:700;letter-spacing:.12em;padding:6px;font-size:13px}'
+      +'.page{max-width:820px;margin:0 auto;padding:38px}h1{font-size:24px;margin:0 0 2px}.meta{color:#777;font-size:12px;margin-bottom:22px}'
+      +'.stat{display:inline-block;margin-right:30px}.stat b{font-size:22px;display:block;color:#c9a24c}.stat span{color:#777;font-size:12px}'
+      +'.sec{margin:26px 0}.sec h2{font-size:14px;color:#444;border-bottom:1px solid #e5e5e5;padding-bottom:6px}'
+      +'.pbtn{position:fixed;top:12px;right:12px;padding:9px 15px;background:#c9a24c;border:none;border-radius:6px;cursor:pointer;font-weight:600}@media print{.pbtn{display:none}}'
+      +'</style></head><body><button class="pbtn" onclick="window.print()">Save as PDF / Print</button>'+band
+      +'<div class="page"><h1>'+title+'</h1><div class="meta">TetraCubeDB report &middot; '+rows.length.toLocaleString()+' records</div>'
+      +'<div class="sec"><div class="stat"><b>'+rows.length.toLocaleString()+'</b><span>records</span></div><div class="stat"><b>'+nx+'&times;</b><span>compression</span></div><div class="stat"><b>'+(rec.lossless?'Verified':'&mdash;')+'</b><span>integrity</span></div></div>'
+      +(bar?'<div class="sec"><h2>Count by '+esc(dim?dim.name:'')+'</h2>'+bar+'</div>':'')
+      +(line?'<div class="sec"><h2>Trend</h2>'+line+'</div>':'')
+      +(pie?'<div class="sec"><h2>Share by '+esc(dim?dim.name:'')+'</h2>'+pie+'</div>':'')
+      +'</div>'+band+'</body></html>';
+    const w=window.open('','_blank'); if(w){ w.document.write(doc); w.document.close(); }
+  };
 
   function compressionPanel(){
     const rec = REPORT.receipt, ratio = rec.cellsSeeded ? rec.cellsRaw/rec.cellsSeeded : 1;
@@ -347,6 +405,8 @@
     const bb=document.getElementById('bloombtn'), br=document.getElementById('bloomres');
     if(bb) bb.onclick=()=>{ const ok=REPORT.receipt.lossless;
       br.innerHTML='<span class="bloomed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Restored all '+DATA.length.toLocaleString()+' records · '+(ok?'byte-for-byte identical':'MISMATCH')+'</span>'; };
+
+    const rgo=document.getElementById('rgo'); if(rgo) rgo.onclick=()=>window.tcReport();
 
     // universal clickability: every value cell is a point that drills to its set
     out.querySelectorAll('td.cell').forEach(td=>td.addEventListener('click',()=>tcClickVal(td.getAttribute('data-f'), td.getAttribute('data-v'))));

@@ -75,6 +75,22 @@ a browser sandbox cannot silently read system folders).
 - **Licensing.** The purchase issues a license key validated by the shell; the storefront (site) is the
   only network touchpoint, and it never sees user data.
 
+## 2.3a Reports and export
+
+A proper report builder (a big part of the academia/corporate value), built on permissive open-source
+(Apache/MIT), all bundled offline (no CDN, self-contained app):
+- **Charts:** Apache ECharts (Apache-2.0) for good-looking bar / line / pie / area / scatter, themeable,
+  exportable to image/SVG. (Chart.js, MIT, is the lighter fallback.) Charts build from any set or slice.
+- **Formatted PDF:** pdfmake (MIT) for branded, precise PDFs (or native print-to-PDF as the zero-dep
+  path). Headers/footers, tables, images.
+- **Themes / looks:** several report templates (corporate, minimal, light/dark/print).
+- **Branding:** logo, background image, patterns, company markers, header/footer.
+- **Classification:** banners and watermarks (Public / Internal / Confidential / Restricted, or custom),
+  top and bottom, the standard corporate/gov markings.
+- **Standard compression options too:** alongside TetraCube's geometric compression, offer STANDARD
+  zip/gzip (JSZip, MIT, + the browser's CompressionStream) for interoperability, many things must ship in
+  a format any tool reads. User chooses geometric or standard per export.
+
 ## 2.4 The dimensional model (the foundation, kept out of the UI copy)
 
 This is how the product thinks; users never see these words, they see outcomes.
