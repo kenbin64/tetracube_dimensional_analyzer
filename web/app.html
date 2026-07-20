@@ -8,88 +8,86 @@
     --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Helvetica,Arial,sans-serif;
   }
   *{box-sizing:border-box} html,body{margin:0;padding:0}
-  body{background:var(--ink);color:var(--paper);font-family:var(--sans);line-height:1.55;-webkit-font-smoothing:antialiased}
-  .mono{font-family:var(--mono)}
-  a{color:var(--verify)}
+  body{background:var(--ink);color:var(--paper);font-family:var(--sans);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .mono{font-family:var(--mono)} a{color:var(--verify)}
   header.nav{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:rgba(11,13,19,.8);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:600}
-  .brand b{color:var(--brass)}
-  .brand svg{width:22px;height:22px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600}.brand b{color:var(--brass)}.brand svg{width:22px;height:22px}
   .nav-tag{font-family:var(--mono);font-size:.64rem;letter-spacing:.2em;text-transform:uppercase;color:var(--mist-dim)}
-  .wrap{max-width:1120px;margin:0 auto;padding:26px 24px 80px}
+  .wrap{max-width:1120px;margin:0 auto;padding:24px 24px 80px}
 
-  .drop{border:1.5px dashed var(--line);border-radius:14px;background:var(--ink-2);padding:40px 24px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s}
+  .drop{border:1.5px dashed var(--line);border-radius:14px;background:var(--ink-2);padding:34px 24px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s}
   .drop:hover,.drop.hot{border-color:var(--brass);background:rgba(201,162,76,.05)}
-  .drop svg{width:30px;height:30px;color:var(--brass)}
-  .drop .big{color:var(--paper);font-size:1.02rem;margin-top:8px}
+  .drop svg{width:28px;height:28px;color:var(--brass)}.drop .big{color:var(--paper);font-size:1.02rem;margin-top:8px}
   .drop .or{font-size:.85rem;color:var(--mist-dim);margin-top:6px}
   .link{background:none;border:none;color:var(--verify);font:inherit;cursor:pointer;padding:0;border-bottom:1px solid rgba(95,208,196,.35)}
 
-  .out{margin-top:24px}
-  .out[hidden]{display:none}
-  .headline{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:18px}
-  .headline h2{font-size:1.5rem;font-weight:600;margin:0;letter-spacing:-.01em}
-  .headline .fn{font-family:var(--mono);color:var(--mist);font-size:.85rem}
+  .out{margin-top:22px}.out[hidden]{display:none}
+  .crumbs{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-family:var(--mono);font-size:.82rem;margin-bottom:16px}
+  .crumb{color:var(--verify);cursor:pointer;border:none;background:none;font:inherit;padding:0}
+  .crumb.here{color:var(--paper);cursor:default}
+  .crumb .d{color:var(--mist-dim)} .csep{color:var(--mist-dim)}
 
-  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
-  .card{background:var(--ink-2);border:1px solid var(--line);border-radius:13px;padding:18px 18px}
-  .card .lab{font-family:var(--mono);font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;color:var(--brass);margin-bottom:8px}
-  .card .big{font-size:1.7rem;font-weight:600;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
-  .card .sub{color:var(--mist);font-size:.86rem;margin-top:3px}
-  .card.win{border-color:rgba(95,208,196,.35)} .card.win .big{color:var(--verify)}
+  .lead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+  .lead h2{font-size:1.35rem;font-weight:600;margin:0;letter-spacing:-.01em}
+  .lead .fn{font-family:var(--mono);color:var(--mist);font-size:.84rem}
+  .teach{color:var(--mist-dim);font-size:.82rem;margin:0 0 16px}
 
-  .panel{background:var(--ink-2);border:1px solid var(--line);border-radius:13px;margin-top:16px;overflow:hidden}
-  .panel .ph{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line)}
-  .panel .ph h3{margin:0;font-size:1.02rem;font-weight:600}
-  .panel .ph .hint{color:var(--mist-dim);font-family:var(--mono);font-size:.7rem;letter-spacing:.04em}
-  .pb{padding:16px 18px}
+  .dims{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+  .dim{background:var(--ink-2);border:1px solid var(--line);border-radius:13px;padding:15px 16px}
+  .dim .dh{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:11px}
+  .dim .dn{font-weight:600;font-size:1rem}.dim .dc{font-family:var(--mono);font-size:.68rem;color:var(--mist-dim);letter-spacing:.1em;text-transform:uppercase}
+  .members{display:flex;flex-wrap:wrap;gap:7px}
+  .mem{font-family:var(--mono);font-size:.8rem;padding:5px 10px;border-radius:8px;background:var(--surface);border:1px solid var(--line);color:var(--paper);cursor:pointer;transition:border-color .15s,background .15s}
+  .mem:hover{border-color:var(--brass);background:rgba(201,162,76,.07)}
+  .mem b{color:var(--brass-hi)} .mem .n{color:var(--mist-dim);margin-left:6px}
+  .more{color:var(--mist-dim);font-family:var(--mono);font-size:.74rem;align-self:center}
 
-  .rels{display:flex;flex-direction:column;gap:10px}
-  .rel{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:.94rem}
-  .pill{font-family:var(--mono);font-size:.8rem;padding:4px 9px;border-radius:7px;background:var(--surface);border:1px solid var(--line);color:var(--paper)}
-  .pill.ent{border-color:rgba(201,162,76,.45);color:var(--brass-hi);background:rgba(201,162,76,.06)}
-  .rel .arr{color:var(--mist-dim)}
-  .rel .desc{color:var(--mist);font-size:.85rem}
-  .empty{color:var(--mist-dim);font-size:.88rem}
-
-  /* instant lookup */
-  .lookup{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-  .sel,.inp{background:var(--surface);border:1px solid var(--line);color:var(--paper);font-family:var(--mono);font-size:.86rem;padding:9px 11px;border-radius:8px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+  @media(max-width:760px){.row2{grid-template-columns:1fr}}
+  .panel{background:var(--ink-2);border:1px solid var(--line);border-radius:13px;overflow:hidden}
+  .panel .ph{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--line)}
+  .panel .ph h3{margin:0;font-size:1rem;font-weight:600}.panel .ph .hint{color:var(--mist-dim);font-family:var(--mono);font-size:.68rem}
+  .pb{padding:15px 16px}
+  .btn{font-family:var(--sans);font-weight:600;font-size:.84rem;border:none;cursor:pointer;border-radius:8px;padding:9px 15px;background:var(--brass);color:#1a1406}
+  .btn:hover{background:var(--brass-hi)} .btn.ghost{background:transparent;color:var(--paper);border:1px solid var(--line)}
+  .sel,.inp{background:var(--surface);border:1px solid var(--line);color:var(--paper);font-family:var(--mono);font-size:.84rem;padding:8px 10px;border-radius:8px}
   .sel:focus,.inp:focus{outline:none;border-color:var(--brass)}
-  .btn{font-family:var(--sans);font-weight:600;font-size:.86rem;border:none;cursor:pointer;border-radius:8px;padding:9px 15px;background:var(--brass);color:#1a1406}
-  .btn:hover{background:var(--brass-hi)}
-  .btn.ghost{background:transparent;color:var(--paper);border:1px solid var(--line)}
-  .hit{margin-top:14px}
-  .hit .addr{font-family:var(--mono);font-size:.74rem;color:var(--verify);letter-spacing:.03em;margin-bottom:8px}
-  .kv{display:grid;grid-template-columns:auto 1fr;gap:6px 18px;font-family:var(--mono);font-size:.86rem}
-  .kv .k{color:var(--mist)} .kv .v{color:var(--paper)}
+  .lookrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:5px 16px;font-family:var(--mono);font-size:.84rem;margin-top:12px}
+  .kv .k{color:var(--mist)}.kv .v{color:var(--paper)} .addr{font-family:var(--mono);font-size:.72rem;color:var(--verify);margin-top:10px}
+  .empty{color:var(--mist-dim);font-size:.86rem}
 
-  /* data table */
-  .tblwrap{overflow:auto;max-height:420px;border-top:1px solid var(--line)}
-  table{border-collapse:collapse;width:100%;font-family:var(--mono);font-size:.8rem}
-  th,td{text-align:left;padding:7px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
-  th{position:sticky;top:0;background:var(--surface-2);color:var(--brass);font-weight:600;letter-spacing:.02em;z-index:1}
-  th .k{font-size:.6rem;color:var(--mist-dim);display:block;letter-spacing:.12em;text-transform:uppercase}
-  td{color:var(--paper)} tr:hover td{background:rgba(201,162,76,.04)}
-  td.num{color:var(--verify);text-align:right}
+  /* compression = the OMG */
+  .comp{margin-top:16px;border:1px solid rgba(201,162,76,.4);border-radius:13px;background:rgba(201,162,76,.05);padding:18px 18px}
+  .comp .big{font-size:2rem;font-weight:600;color:var(--brass-hi);letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+  .comp .cl{font-family:var(--mono);font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--brass);margin-bottom:6px}
+  .comp .sub{color:var(--mist);font-size:.9rem;margin-top:4px}
+  .comp .act{margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .bloomed{color:var(--verify);font-family:var(--mono);font-size:.82rem;display:flex;align-items:center;gap:8px}
+  .bloomed svg{width:16px;height:16px}
 
-  /* proof */
-  .proof{display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:13px;margin-top:16px;border:1px solid rgba(95,208,196,.4);background:rgba(95,208,196,.06)}
-  .proof.bad{border-color:rgba(231,138,122,.5);background:rgba(231,138,122,.06)}
-  .proof svg{width:30px;height:30px;flex:none;color:var(--verify)} .proof.bad svg{color:var(--bad)}
-  .proof .h{font-size:1.05rem;font-weight:600;color:var(--verify)} .proof.bad .h{color:var(--bad)}
-  .proof .s{color:var(--mist);font-size:.84rem;margin-top:2px}
+  .an{margin-top:12px} .rel{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:.9rem;margin:6px 0}
+  .pill{font-family:var(--mono);font-size:.78rem;padding:3px 8px;border-radius:7px;background:var(--surface);border:1px solid var(--line)} .pill.ent{border-color:rgba(201,162,76,.45);color:var(--brass-hi)}
+  .rel .arr{color:var(--mist-dim)}.rel .desc{color:var(--mist);font-size:.82rem}
+
+  details.data{margin-top:16px;border:1px solid var(--line);border-radius:13px;background:var(--ink-2)}
+  details.data>summary{cursor:pointer;padding:13px 16px;font-weight:600;font-size:.95rem;list-style:none}
+  details.data>summary::-webkit-details-marker{display:none}
+  details.data>summary::before{content:'▸ ';color:var(--mist-dim)} details.data[open]>summary::before{content:'▾ '}
+  .tblwrap{overflow:auto;max-height:360px;border-top:1px solid var(--line)}
+  table{border-collapse:collapse;width:100%;font-family:var(--mono);font-size:.78rem}
+  th,td{text-align:left;padding:6px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+  th{position:sticky;top:0;background:var(--surface-2);color:var(--brass);font-weight:600;z-index:1}
+  td{color:var(--paper)} td.num{color:var(--verify);text-align:right} tr:hover td{background:rgba(201,162,76,.04)}
   .proc{color:var(--verify);font-family:var(--mono);font-size:.9rem;padding:26px 0;text-align:center}
   .foot{color:var(--mist-dim);font-family:var(--mono);font-size:.7rem;text-align:center;margin-top:26px}
-  /* preview gate (soft, client-side; real auth is server-side on the VPS before public launch) */
+
   #gate{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:24px;transition:opacity .45s,visibility .45s;background:radial-gradient(1200px 700px at 50% -10%,rgba(201,162,76,.10),transparent 60%),var(--ink)}
   #gate.open{opacity:0;visibility:hidden;pointer-events:none}
   .gate-card{width:100%;max-width:360px;display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center}
-  .gate-title{font-size:1.4rem;font-weight:600}.gate-title b{color:var(--brass)}
-  .gate-sub{color:var(--mist);font-size:.9rem;margin-top:-6px}
+  .gate-title{font-size:1.4rem;font-weight:600}.gate-title b{color:var(--brass)} .gate-sub{color:var(--mist);font-size:.9rem;margin-top:-6px}
   .field{width:100%;background:var(--surface);border:1px solid var(--line);color:var(--paper);font-family:var(--mono);font-size:.92rem;letter-spacing:.06em;padding:12px 14px;border-radius:9px}
-  .field:focus{outline:none;border-color:var(--brass)}
-  .gate-err{color:var(--bad);font-family:var(--mono);font-size:.76rem;min-height:1em}
+  .field:focus{outline:none;border-color:var(--brass)} .gate-err{color:var(--bad);font-family:var(--mono);font-size:.76rem;min-height:1em}
   .gate-foot{color:var(--mist-dim);font-family:var(--mono);font-size:.68rem;letter-spacing:.18em;text-transform:uppercase}
 </style>
 
@@ -119,16 +117,13 @@
     <input type="file" id="file" accept=".csv,.json,text/csv,application/json" hidden>
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0 4 4m-4-4L8 8"/><path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
     <div class="big">Drop a dataset (CSV or JSON), or <button class="link" id="pick" type="button">choose one</button></div>
-    <div class="or">or try public data: <span id="samples" class="samples"></span></div>
+    <div class="or">or try public data: <span id="samples"></span></div>
   </div>
-
   <div class="out" id="out" hidden></div>
   <div class="foot">TetraCubeDB &middot; runs entirely on your machine &middot; tetracubedb.us</div>
 </div>
 
 <script>
-  // Soft preview gate, shared with index.html via the same-origin session (sign in once). NOT real
-  // security: credentials live in the page. Server-side auth on the VPS replaces this before launch.
   (function(){
     var USER='admin', PASS='pp&pgroup';
     var gate=document.getElementById('gate'), uEl=document.getElementById('user'), pEl=document.getElementById('pass'), err=document.getElementById('err');
@@ -145,131 +140,134 @@
 <script type="module">
   import { analyzeDataset, parseCSV } from '../src/index.mjs';
 
-  const drop = document.getElementById('drop'), fileEl = document.getElementById('file'), out = document.getElementById('out');
-  let DATA = null, REPORT = null;
+  const out = document.getElementById('out'), fileEl = document.getElementById('file'), drop = document.getElementById('drop');
+  let DATA=null, REPORT=null, NAME='', DRILL=[];   // DRILL = [{dim, value}, ...] the path we drilled
 
-  const esc = s => String(s).replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+  const esc = s => String(s).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
   const isNum = v => v!==null && v!=='' && v!==undefined && Number.isFinite(Number(v));
 
-  function sampleRows(){
-    // A clean sample: a customer ENTITY (customer_id -> name, tier) that repeats, an INDEPENDENT
-    // status (period 5, coprime with the 6 customers, so nothing spuriously determines it), and a
-    // compressible measure. No accidental relationships.
-    const cust = {
-      101:['Acme','gold'], 102:['Globex','silver'], 103:['Initech','gold'],
-      104:['Umbra','bronze'], 105:['Soylent','silver'], 106:['Hooli','gold'],
-    };
-    const ids = Object.keys(cust);
-    const status = ['open','packed','shipped','delivered','returned'];
-    const rows=[];
-    for(let i=0;i<60;i++){
-      const cid = ids[i%6];
-      rows.push({ order_id:5000+i, customer_id:Number(cid), customer_name:cust[cid][0],
-        tier:cust[cid][1], status:status[i%5], units:10+3*i });
-    }
-    return rows;
-  }
-
+  // ---- ingest ----
   function analyze(rows, name){
-    DATA = rows;
+    DATA=rows; NAME=name; DRILL=[];
     out.hidden=false; out.innerHTML='<div class="proc">Organizing '+esc(name)+' &hellip;</div>';
-    setTimeout(()=>{ try{ REPORT = analyzeDataset(rows); render(name); }catch(e){ out.innerHTML='<div class="proc">Could not read that file. '+esc(e.message||'')+'</div>'; } }, 260);
+    setTimeout(()=>{ try{ REPORT=analyzeDataset(rows); renderNav(); }catch(e){ out.innerHTML='<div class="proc">Could not read that file. '+esc(e.message||'')+'</div>'; } }, 240);
   }
 
-  // ---- translate the engine's geometry into plain OUTCOME language (no internals on screen) ----
-  function entitiesFromForm(form){
-    // collapse mutually-determining apexes (bijective) into one named entity; drop measure/key noise
-    const seen = new Set(), ents = [];
-    for(const c of form.capstones){
-      const members = [c.apex, ...c.gathers].sort();
-      const sig = members.join('|'); if(seen.has(sig)) continue; seen.add(sig);
-      ents.push({ name: c.apex.replace(/_id$/,'') || c.apex, key:c.apex, fields:c.gathers });
-    }
-    return ents;
+  // ---- the dimensional model ----
+  // A DIMENSION is a type/category you drill into (studio, genre, sector), not a unique identity.
+  // Identities (keys: order_id, vin) address one record. Relationships are built on demand by drilling.
+  function facets(){
+    // A dimension is a type you NAVIGATE (its name is the point; what it is stays latent until you
+    // drill). So exclude identities (keys), exclude entity attributes (they live inside their entity
+    // dimension), and exclude continuous measures (too many distinct values to be a category).
+    const attrs = new Set(REPORT.form.capstones.flatMap(c => c.gathers));
+    return REPORT.columns.filter(c =>
+      !REPORT.candidateKeys.includes(c.name) &&
+      !attrs.has(c.name) &&
+      c.distinct >= 2 && c.distinct <= Math.max(3, DATA.length * 0.5));
+  }
+  const inDrill = n => DRILL.some(d=>d.dim===n);
+  function slice(){ return DATA.filter(r => DRILL.every(d => String(r[d.dim])===String(d.value))); }
+  function members(dim, rows){                              // built ON DEMAND for the current slice
+    const m = new Map();
+    for(const r of rows){ const k = r[dim]==null?'—':String(r[dim]); m.set(k,(m.get(k)||0)+1); }
+    return [...m.entries()].map(([value,count])=>({value,count})).sort((a,b)=>b.count-a.count);
   }
 
-  function render(name){
-    const r = REPORT, rec = r.receipt;
-    const ents = entitiesFromForm(r.form);
-    // relationships worth showing separately = couplings NOT already inside a found entity
-    const entMembers = ents.map(e=>new Set([e.key, ...e.fields]));
-    const inSameEntity = (a,b)=>entMembers.some(m=>m.has(a)&&m.has(b));
-    const rels = r.couplings.filter(c=>!r.candidateKeys.includes(c.from) && !inSameEntity(c.from,c.to));
-    const patternCols = r.columns.filter(c=>c.kind==='numeric' && c.rule && c.rule!=='raw');
-    const dedupPct = rec.cellsRaw ? Math.max(0, Math.round((1-rec.cellsSeeded/rec.cellsRaw)*100)) : 0;
+  window.tcDrill = (dim,value)=>{ DRILL.push({dim, value:String(value)}); renderNav(); };
+  window.tcUp = (level)=>{ DRILL = DRILL.slice(0, level); renderNav(); };
+
+  function renderNav(){
+    const rows = slice();
+    const remaining = facets().filter(c=>!inDrill(c.name));
+    // breadcrumb
+    let crumbs = '<button class="crumb'+(DRILL.length?'':' here')+'" onclick="tcUp(0)">All</button>';
+    DRILL.forEach((d,i)=>{ crumbs += '<span class="csep">▸</span><button class="crumb'+(i===DRILL.length-1?' here':'')+'" onclick="tcUp('+(i+1)+')"><span class="d">'+esc(d.dim)+':</span> '+esc(d.value)+'</button>'; });
+
+    // dimension cards (drill options), each with on-demand member counts for THIS slice
+    let dimsHtml = remaining.length ? '<div class="dims">' + remaining.map(c=>{
+      const ms = members(c.name, rows), top = ms.slice(0,12);
+      const role = REPORT.form.capstones.some(x=>x.apex===c.name) ? 'entity dimension' : 'dimension';
+      return '<div class="dim"><div class="dh"><span class="dn">'+esc(c.name)+'</span><span class="dc">'+role+' · '+ms.length+'</span></div>'
+        + '<div class="members">' + top.map(m=>'<button class="mem" onclick="tcDrill(\''+esc(c.name).replace(/'/g,"&#39;")+'\',\''+esc(String(m.value)).replace(/'/g,"&#39;")+'\')"><b>'+esc(m.value)+'</b><span class="n">'+m.count+'</span></button>').join('')
+        + (ms.length>top.length?'<span class="more">+'+(ms.length-top.length)+' more</span>':'') + '</div></div>';
+    }).join('') + '</div>' : '<div class="empty">No more dimensions to drill here — this is a single point. Use retrieval or Analyze.</div>';
 
     out.innerHTML = ''
-      + '<div class="headline"><h2>Here is what is inside '+esc(name)+'</h2><span class="fn">'+r.rows.toLocaleString()+' records &middot; '+r.columns.length+' fields</span></div>'
-      + '<div class="cards">'
-        + card('Records', r.rows.toLocaleString(), 'organized, no duplication')
-        + card('Entities found', String(ents.length), ents.length?('e.g. '+esc(ents[0].name)):'none detected')
-        + card('Relationships', String(rels.length), 'discovered automatically')
-        + card('Footprint', (dedupPct>0?('-'+dedupPct+'%'):'flat'), dedupPct>0?'redundancy removed':'little to compress', dedupPct>0)
+      + '<div class="crumbs">'+crumbs+'</div>'
+      + '<div class="lead"><h2>'+(DRILL.length? 'Inside this slice' : 'Dimensions in '+esc(NAME))+'</h2><span class="fn">'+rows.length.toLocaleString()+' of '+DATA.length.toLocaleString()+' records</span></div>'
+      + '<p class="teach">Drill a dimension to build the relationship on demand. Nothing was joined ahead of time.</p>'
+      + dimsHtml
+      + '<div class="row2">'
+        + retrievalPanel(rows)
+        + analyzePanel()
       + '</div>'
+      + compressionPanel()
+      + dataPanel(rows);
 
-      // discovered entities + relationships, plain language
-      + panel('What connects to what', 'found automatically, nothing declared',
-          (ents.length||rels.length)
-            ? '<div class="rels">'
-              + ents.map(e=>'<div class="rel"><span class="pill ent">'+esc(e.name)+'</span><span class="desc">is one thing, stored once &mdash; '+e.fields.map(esc).join(', ')+' travel with it (deduplicated)</span></div>').join('')
-              + rels.map(c=>'<div class="rel"><span class="pill">'+esc(c.from)+'</span><span class="arr">&rarr;</span><span class="pill">'+esc(c.to)+'</span><span class="desc">'+esc(c.from)+' decides '+esc(c.to)+'</span></div>').join('')
-              + '</div>'
-            : '<div class="empty">No hidden relationships in this set; the fields are independent.</div>')
-
-      // instant lookup by coordinate
-      + panel('Instant lookup', 'jump straight to any value',
-          '<div class="lookup">'
-          + 'Field <select class="sel" id="luf">'+r.columns.map(c=>'<option>'+esc(c.name)+'</option>').join('')+'</select>'
-          + 'equals <input class="inp" id="luv" placeholder="value" style="width:150px">'
-          + '<button class="btn" id="lugo">Retrieve</button>'
-          + '<button class="btn ghost" id="lurow">Row #</button>'
-          + '</div><div class="hit" id="hit"></div>')
-
-      // the data, familiar
-      + '<div class="panel"><div class="ph"><h3>Your data</h3><span class="hint">first '+Math.min(DATA.length,200)+' rows</span></div>'
-        + tableHTML(r) + '</div>'
-
-      // proof (the receipt, plain)
-      + '<div class="proof'+(rec.lossless?'':' bad')+'">'
-        + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/>'+(rec.lossless?'<path d="m8.5 12 2.4 2.4 4.6-5"/>':'<path d="M15 9l-6 6M9 9l6 6"/>')+'</svg>'
-        + '<div><div class="h">'+(rec.lossless?'Verified &mdash; nothing was lost':'Verification failed')+'</div>'
-        + '<div class="s">'+(rec.lossless?'Rebuilt and re-checked against the original. Every record matches, exactly.':'The rebuild did not match the original.')+'</div></div></div>';
-
-    wireLookup();
+    wire();
   }
 
-  function card(lab,big,sub,win){ return '<div class="card'+(win?' win':'')+'"><div class="lab">'+lab+'</div><div class="big">'+big+'</div><div class="sub">'+sub+'</div></div>'; }
-  function panel(title,hint,body){ return '<div class="panel"><div class="ph"><h3>'+title+'</h3><span class="hint">'+hint+'</span></div><div class="pb">'+body+'</div></div>'; }
+  function retrievalPanel(rows){
+    const ids = REPORT.candidateKeys.length ? REPORT.candidateKeys : REPORT.columns.map(c=>c.name).slice(0,1);
+    return '<div class="panel"><div class="ph"><h3>Instant retrieval</h3><span class="hint">go straight to one record</span></div><div class="pb">'
+      + '<div class="lookrow">by <select class="sel" id="luf">'+ids.map(n=>'<option>'+esc(n)+'</option>').join('')+'</select>'
+      + '= <input class="inp" id="luv" placeholder="value" style="width:150px">'
+      + '<button class="btn" id="lugo">Retrieve</button></div><div id="hit"></div></div></div>';
+  }
+  function analyzePanel(){
+    return '<div class="panel"><div class="ph"><h3>Analyze</h3><span class="hint">structure of the current slice</span></div><div class="pb">'
+      + '<button class="btn ghost" id="ango">Analyze this slice</button><div class="an" id="anout"></div></div></div>';
+  }
 
-  function tableHTML(r){
-    const names = r.columns.map(c=>c.name);
-    const rows = DATA.slice(0,200);
-    let h='<div class="tblwrap"><table><thead><tr>';
-    for(const c of r.columns){ const role = r.candidateKeys.includes(c.name)?'address':(c.dim==='surface'?'linked':(c.kind==='numeric'?'measure':'field')); h+='<th>'+esc(c.name)+'<span class="k">'+role+'</span></th>'; }
+  function compressionPanel(){
+    const rec = REPORT.receipt, pct = Math.max(0, Math.round((1-rec.cellsSeeded/rec.cellsRaw)*100));
+    return '<div class="comp"><div class="cl">Compression</div>'
+      + '<div class="big">'+(pct>0?('-'+pct+'%'):'lossless')+'</div>'
+      + '<div class="sub">Stored as a rule, not a pile of values: '+rec.cellsRaw.toLocaleString()+' cells kept as '+rec.cellsSeeded.toLocaleString()+'. It rebuilds every record exactly. (Structured data like time series shrinks far more.)</div>'
+      + '<div class="act"><button class="btn" id="bloombtn">Bloom it back</button><span id="bloomres"></span></div></div>';
+  }
+
+  function dataPanel(rows){
+    const names = REPORT.columns.map(c=>c.name);
+    let h='<details class="data"><summary>The records ('+Math.min(rows.length,200)+' shown)</summary><div class="tblwrap"><table><thead><tr>';
+    for(const c of REPORT.columns){ const role = REPORT.candidateKeys.includes(c.name)?'identity':(c.dim==='surface'?'linked':(c.kind==='numeric'?'measure':'dimension')); h+='<th>'+esc(c.name)+'<div style="font-size:.6rem;color:var(--mist-dim);font-weight:400">'+role+'</div></th>'; }
     h+='</tr></thead><tbody>';
-    for(const row of rows){ h+='<tr>'; for(const n of names){ const v=row[n]; h+='<td'+(isNum(v)?' class="num"':'')+'>'+esc(v===null||v===undefined?'':v)+'</td>'; } h+='</tr>'; }
-    return h+'</tbody></table></div>';
+    for(const r of rows.slice(0,200)){ h+='<tr>'; for(const n of names){ const v=r[n]; h+='<td'+(isNum(v)?' class="num"':'')+'>'+esc(v==null?'':v)+'</td>'; } h+='</tr>'; }
+    return h+'</tbody></table></div></details>';
   }
 
-  function wireLookup(){
-    const go=document.getElementById('lugo'), rowBtn=document.getElementById('lurow'), hit=document.getElementById('hit');
-    const showRec=(addr,rec)=>{ hit.innerHTML='<div class="addr">'+esc(addr)+'</div><div class="kv">'+Object.entries(rec).map(([k,v])=>'<div class="k">'+esc(k)+'</div><div class="v">'+esc(v===null?'':v)+'</div>').join('')+'</div>'; };
-    go.onclick=()=>{ const f=document.getElementById('luf').value, v=document.getElementById('luv').value;
+  function wire(){
+    const go=document.getElementById('lugo'), hit=document.getElementById('hit');
+    if(go) go.onclick=()=>{ const f=document.getElementById('luf').value, v=document.getElementById('luv').value;
       const idx=DATA.findIndex(r=>String(r[f])===String(v));
       if(idx<0){ hit.innerHTML='<div class="empty">No record where '+esc(f)+' = '+esc(v)+'.</div>'; return; }
-      showRec('['+f+' = '+v+']  &rarr; record #'+idx, DATA[idx]); };
-    rowBtn.onclick=()=>{ const v=document.getElementById('luv').value, i=parseInt(v,10);
-      if(!Number.isInteger(i)||i<0||i>=DATA.length){ hit.innerHTML='<div class="empty">Enter a row number 0&ndash;'+(DATA.length-1)+' in the value box.</div>'; return; }
-      showRec('[row '+i+']', DATA[i]); };
+      const rec=DATA[idx];
+      hit.innerHTML='<div class="addr">['+esc(f)+' = '+esc(v)+'] → record #'+idx+'</div><div class="kv">'+Object.entries(rec).map(([k,val])=>'<div class="k">'+esc(k)+'</div><div class="v">'+esc(val==null?'':val)+'</div>').join('')+'</div>'; };
+
+    const an=document.getElementById('ango'), anout=document.getElementById('anout');
+    if(an) an.onclick=()=>{ const rows=slice(); if(rows.length<2){ anout.innerHTML='<div class="empty">Drill less — need at least 2 records to analyze.</div>'; return; }
+      const r=analyzeDataset(rows);
+      const ents=[]; const seen=new Set();
+      for(const c of r.form.capstones){ const sig=[c.apex,...c.gathers].sort().join('|'); if(!seen.has(sig)){seen.add(sig);ents.push(c);} }
+      const rels=r.couplings.filter(c=>!r.candidateKeys.includes(c.from) && !ents.some(e=>[e.apex,...e.gathers].includes(c.from)&&[e.apex,...e.gathers].includes(c.to)));
+      let h='';
+      ents.forEach(e=>h+='<div class="rel"><span class="pill ent">'+esc(e.apex)+'</span><span class="desc">groups '+e.gathers.map(esc).join(', ')+' (stored once)</span></div>');
+      rels.forEach(c=>h+='<div class="rel"><span class="pill">'+esc(c.from)+'</span><span class="arr">→</span><span class="pill">'+esc(c.to)+'</span></div>');
+      h+='<div class="rel"><span class="desc">'+r.rank+' independent axis'+(r.rank>1?'es':'')+' · rebuilds '+(r.receipt.lossless?'exact':'—')+'</span></div>';
+      anout.innerHTML = h || '<div class="empty">Independent fields, no hidden relationships in this slice.</div>'; };
+
+    const bb=document.getElementById('bloombtn'), br=document.getElementById('bloomres');
+    if(bb) bb.onclick=()=>{ const ok=REPORT.receipt.lossless;
+      br.innerHTML='<span class="bloomed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Rebuilt all '+DATA.length.toLocaleString()+' records · '+(ok?'byte-for-byte identical':'MISMATCH')+'</span>'; };
   }
 
+  // ---- file/sample loading ----
   function fromFile(f){ if(!f) return; f.text().then(t=>{ let rows; const nm=f.name||'dataset';
     if(/\.json$/i.test(nm)||t.trim().startsWith('[')){ const j=JSON.parse(t); rows=Array.isArray(j)?j:(j.rows||j.data||[]); }
     else rows=parseCSV(t);
     analyze(rows, nm); }); }
 
-  // Public sample buttons — DEMO ONLY. The downloadable app ships empty and connects to the user's
-  // own folders and sources; these curated public datasets are just to show what the engine does.
   fetch('samples/index.json').then(r=>r.json()).then(list=>{
     const host=document.getElementById('samples');
     host.innerHTML=list.map(s=>'<button class="link" data-f="'+s.file+'" data-l="'+s.label+'">'+s.label+'</button>').join(' &middot; ');
