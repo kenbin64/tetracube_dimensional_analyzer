@@ -4,9 +4,9 @@
 // lossless encapsulation, never a lossy collapse). The residual's size measures how much structure
 // the rule actually captured: all-zero residual = pure structure (max compression), full residual =
 // no structure (degrade to raw, exactly as GEP returns 1.0x on random, Guard 5).
-import crypto from 'crypto';
+import { sha256Utf8 } from './sha256.mjs';
 
-export const shaSeq = (x) => crypto.createHash('sha256').update(JSON.stringify(x)).digest('hex');
+export const shaSeq = (x) => sha256Utf8(JSON.stringify(x));
 
 // The maintained rule registry (PRIMER: "maintain the rule to rebuild"). Rules are versioned; a seed
 // stamps (rule, version) and bloom resolves the rule from the registry by that stamp, so a seed made

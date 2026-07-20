@@ -15,10 +15,10 @@
 // unchanged; it does not hide them. Secret data still needs real encryption (a standard, bounded layer,
 // never DIY crypto). "Baked in" means the model is secure-shaped so you are not endlessly wrapping an
 // insecure core, not that confidentiality comes for free.
-import crypto from 'crypto';
+import { sha256Hex } from './sha256.mjs';
 import { classify } from './policy.mjs';
 
-export const sha256Bytes = (bytes) => crypto.createHash('sha256').update(Buffer.from(bytes)).digest('hex');
+export const sha256Bytes = (bytes) => sha256Hex(bytes);
 
 // Pack an encoded body into a capsule. originalBytes = the source; encodedByteLen = the serialized size
 // of the body (the real compressed bitcount comes from this); body = whatever reconstructs the original.

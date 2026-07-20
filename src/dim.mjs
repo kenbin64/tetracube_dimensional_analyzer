@@ -3,7 +3,7 @@
 // coordinate is the values. A point maps one-to-one to a table schema + row (PRIMER Section 7:
 // row = point, table = surface). Everything harder (nesting, couplings, curvature) is added on top
 // of this, one test at a time. Nothing here may lose information (PRIMER Guard 4).
-import crypto from 'crypto';
+import { sha256Utf8 } from './sha256.mjs';
 
 // Canonical form: keys sorted, so JSON serialization is deterministic and the SHA is stable
 // regardless of the input key order. This is the honest baseline for the round-trip receipt.
@@ -13,7 +13,7 @@ export function canonical(record) {
   return out;
 }
 
-export const sha = (obj) => crypto.createHash('sha256').update(JSON.stringify(canonical(obj))).digest('hex');
+export const sha = (obj) => sha256Utf8(JSON.stringify(canonical(obj)));
 
 // The unit of an axis, inferred (PRIMER Section 5: unitize each axis). For a flat record this is the
 // value's type; it is what makes a column a typed axis rather than an untyped blob.
