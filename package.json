@@ -1,0 +1,11 @@
+{
+  "name": "dimensional-analyzer",
+  "version": "0.1.0",
+  "description": "Store the generator, derive the field. A lossless, self-testing dimensional analyzer.",
+  "type": "module",
+  "scripts": {
+    "test": "node run-tests.mjs"
+  },
+  "license": "UNLICENSED",
+  "private": true
+}
