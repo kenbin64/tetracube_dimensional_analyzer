@@ -27,9 +27,17 @@ a browser sandbox cannot silently read system folders).
 - **Passive connectors:** read-only, schema-agnostic. The app does not prescribe, reach out, or mutate.
   It passively reads whatever the user points it at, and the engine organizes whatever shape comes back.
   One generic connector pattern, not a pile of specific integrations.
-- **Pointer system (APIs + datastores):** a pointer is an *address*, not a copy. The user registers a
-  source (an API endpoint, a datastore) and the app holds the pointer; the data blooms at runtime only
-  when the user traverses to it. Decoupled by default, relationships derived on demand.
+- **Pointer system (APIs + datastores + software):** a pointer is an *address*, not a copy. The user
+  registers a source, an API endpoint, a datastore, or another piece of software, and the app holds the
+  pointer; the data blooms at runtime only when the user traverses to it. Decoupled by default,
+  relationships derived on demand.
+- **Language-agnostic, both directions.** Connectors speak neutral protocols (HTTP/JSON, files, stdio,
+  SQL), so they do not care what language anything is written in. And TetraCube exposes a plain local
+  interface (a local HTTP/JSON API and a CLI) so software in ANY language can drive the engine. The core
+  data model is pure records/dimensions/rules, no language lock-in.
+- **AI is an optional connector, never provided.** The core is deterministic and needs no model (the
+  non-AI AI). If a user wants AI, they connect their own (an LLM endpoint is just another pointer),
+  off by default, never a dependency. We ship no model.
 
 ### 2.2 What it does (the engine, in outcome language)
 
