@@ -1,0 +1,25 @@
+{
+  "note": "A datastore of PUBLIC APIs the app searches by query. Passive: it holds pointers (addresses), not data. When a query matches, it connects live on demand. 'browser:true' means CORS-open and no key, so it works directly in the browser demo; others connect through the desktop shell. This is a starter table; users add their own.",
+  "apis": [
+    { "id": "openlibrary", "name": "Open Library", "domain": "books", "keywords": ["book", "books", "title", "titles", "author", "isbn", "publisher"],
+      "endpoint": "https://openlibrary.org/search.json", "query_param": "q", "browser": true, "auth": "none", "docs": "https://openlibrary.org/developers/api" },
+    { "id": "googlebooks", "name": "Google Books", "domain": "books", "keywords": ["book", "books", "title", "author", "isbn"],
+      "endpoint": "https://www.googleapis.com/books/v1/volumes", "query_param": "q", "browser": true, "auth": "none", "docs": "https://developers.google.com/books" },
+    { "id": "restcountries", "name": "REST Countries", "domain": "geography", "keywords": ["country", "countries", "capital", "population", "region", "currency", "gis"],
+      "endpoint": "https://restcountries.com/v3.1/name", "query_param": "path", "browser": true, "auth": "none", "docs": "https://restcountries.com" },
+    { "id": "openmeteo", "name": "Open-Meteo", "domain": "weather", "keywords": ["weather", "forecast", "temperature", "climate", "rain"],
+      "endpoint": "https://api.open-meteo.com/v1/forecast", "query_param": "latitude,longitude", "browser": true, "auth": "none", "docs": "https://open-meteo.com/en/docs" },
+    { "id": "usgs", "name": "USGS Earthquakes", "domain": "geology", "keywords": ["earthquake", "quake", "seismic", "magnitude", "geology"],
+      "endpoint": "https://earthquake.usgs.gov/fdsnws/event/1/query", "query_param": "format=geojson", "browser": true, "auth": "none", "docs": "https://earthquake.usgs.gov/fdsnws/event/1/" },
+    { "id": "coingecko", "name": "CoinGecko", "domain": "crypto", "keywords": ["crypto", "coin", "bitcoin", "price", "market", "token"],
+      "endpoint": "https://api.coingecko.com/api/v3/coins/markets", "query_param": "vs_currency", "browser": true, "auth": "none", "docs": "https://www.coingecko.com/en/api" },
+    { "id": "wikipedia", "name": "Wikipedia", "domain": "reference", "keywords": ["wiki", "history", "encyclopedia", "definition", "who", "what"],
+      "endpoint": "https://en.wikipedia.org/w/api.php", "query_param": "search", "browser": true, "auth": "none", "docs": "https://www.mediawiki.org/wiki/API:Search" },
+    { "id": "dictionaryapi", "name": "Free Dictionary", "domain": "language", "keywords": ["word", "define", "definition", "dictionary", "meaning"],
+      "endpoint": "https://api.dictionaryapi.dev/api/v2/entries/en", "query_param": "path", "browser": true, "auth": "none", "docs": "https://dictionaryapi.dev" },
+    { "id": "tmdb", "name": "The Movie Database", "domain": "movies", "keywords": ["movie", "movies", "film", "actor", "director", "cast"],
+      "endpoint": "https://api.themoviedb.org/3/search/movie", "query_param": "query", "browser": false, "auth": "api_key", "docs": "https://developer.themoviedb.org" },
+    { "id": "alphavantage", "name": "Alpha Vantage", "domain": "stocks", "keywords": ["stock", "stocks", "ticker", "symbol", "quote", "market", "price"],
+      "endpoint": "https://www.alphavantage.co/query", "query_param": "keywords", "browser": false, "auth": "api_key", "docs": "https://www.alphavantage.co/documentation" }
+  ]
+}
