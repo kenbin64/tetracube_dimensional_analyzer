@@ -62,6 +62,7 @@
   .comp .big{font-size:2rem;font-weight:600;color:var(--brass-hi);letter-spacing:-.01em;font-variant-numeric:tabular-nums}
   .comp .cl{font-family:var(--mono);font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--brass);margin-bottom:6px}
   .comp .sub{color:var(--mist);font-size:.9rem;margin-top:4px}
+  .ttip{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;border:1px solid var(--brass);color:var(--brass);font-size:.62rem;font-style:italic;cursor:help;vertical-align:middle}
   .comp .act{margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
   .bloomed{color:var(--verify);font-family:var(--mono);font-size:.82rem;display:flex;align-items:center;gap:8px}
   .bloomed svg{width:16px;height:16px}
@@ -157,7 +158,12 @@
   function analyze(rows, name){
     DATA=rows; NAME=name; DRILL=[];
     out.hidden=false; out.innerHTML='<div class="proc">Organizing '+esc(name)+' &hellip;</div>';
-    setTimeout(()=>{ try{ REPORT=analyzeDataset(rows); renderNav(); }catch(e){ out.innerHTML='<div class="proc">Could not read that file. '+esc(e.message||'')+'</div>'; } }, 240);
+    setTimeout(()=>{ try{
+      const now=()=> (window.performance&&performance.now)?performance.now():Date.now();
+      const t0=now(); REPORT=analyzeDataset(rows); REPORT._ms=Math.max(1,Math.round(now()-t0));
+      REPORT._bytes=new TextEncoder().encode(JSON.stringify(rows)).length;
+      renderNav();
+    }catch(e){ out.innerHTML='<div class="proc">Could not read that file. '+esc(e.message||'')+'</div>'; } }, 240);
   }
 
   // ---- the dimensional model ----
@@ -256,10 +262,14 @@
   }
 
   function compressionPanel(){
-    const rec = REPORT.receipt, pct = Math.max(0, Math.round((1-rec.cellsSeeded/rec.cellsRaw)*100));
-    return '<div class="comp"><div class="cl">Compression</div>'
-      + '<div class="big">'+(pct>0?('-'+pct+'%'):'lossless')+'</div>'
-      + '<div class="sub">Stored as a rule, not a pile of values: '+rec.cellsRaw.toLocaleString()+' cells kept as '+rec.cellsSeeded.toLocaleString()+'. It rebuilds every record exactly. (Structured data like time series shrinks far more.)</div>'
+    const rec = REPORT.receipt, ratio = rec.cellsSeeded ? rec.cellsRaw/rec.cellsSeeded : 1;
+    const nx = ratio>=10 ? Math.round(ratio) : ratio.toFixed(1);
+    const fmt = b => b<1024 ? b+' B' : b<1048576 ? (b/1024).toFixed(1)+' KB' : (b/1048576).toFixed(2)+' MB';
+    const origB = REPORT._bytes||0, newB = Math.max(1, Math.round(origB/ratio));
+    return '<div class="comp"><div class="cl">Compression <span class="ttip" tabindex="0" title="Not a zip. It finds the pattern in your data, keeps the rules that generate it plus a small residual (a correction), and rebuilds it exactly. Structured data shrinks far beyond normal compression; flat or random data stays the same size.">i</span></div>'
+      + '<div class="big">'+nx+'&times;<span style="font-size:1rem;color:var(--mist);font-weight:400"> smaller</span></div>'
+      + '<div class="sub">'+fmt(origB)+' &rarr; '+fmt(newB)+' &middot; '+rec.cellsRaw.toLocaleString()+' cells &rarr; '+rec.cellsSeeded.toLocaleString()+' &middot; '+(REPORT._ms||1)+' ms</div>'
+      + '<div class="sub" style="color:var(--mist-dim);margin-top:4px">It wins exactly the structure present, and rebuilds every record byte-for-byte.</div>'
       + '<div class="act"><button class="btn" id="bloombtn">Bloom it back</button><span id="bloomres"></span></div></div>';
   }
 

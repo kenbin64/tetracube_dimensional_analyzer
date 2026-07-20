@@ -89,7 +89,19 @@ function cities() {
   return rows;
 }
 
+// --- TELEMETRY LOG: the structured case. Timestamps, counters, offsets, a constant window: exactly
+// the regular structure real logs carry, so it compresses hugely (the honest Nx wow). ---
+function telemetry() {
+  const rows = [];
+  for (let i = 0; i < 400; i++) rows.push({
+    ts_ms: 1700000000000 + i * 20, seq: i, packet_id: 8000 + i,
+    byte_offset: i * 1500, window: 65535,
+  });
+  return rows;
+}
+
 const SETS = {
+  'telemetry.json': { label: 'Telemetry log', rows: telemetry() },
   'movies.json': { label: 'Movies', rows: movies() },
   'books.json': { label: 'Books', rows: books() },
   'stocks.json': { label: 'Stocks', rows: stocks() },

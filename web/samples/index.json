@@ -1,5 +1,10 @@
 [
   {
+    "file": "telemetry.json",
+    "label": "Telemetry log",
+    "rows": 400
+  },
+  {
     "file": "movies.json",
     "label": "Movies",
     "rows": 56
