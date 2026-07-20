@@ -32,6 +32,7 @@ ok(A.inputs.length >= 1 && A.outputs.length >= 1 && A.constraints.length >= 1, '
 console.log('\n== verifiable vs not: can an AI even be scored on this? ==');
 ok(A.scores.verifiable === true, 'clean task is VERIFIABLE (it states how success is checked: exact stdout, tests)');
 ok(B.scores.verifiable === false, 'vague task is NOT verifiable (no checkable success condition), so it would stymie a grader');
+ok(analyzeTask('Read /app/in.json; write /app/out.json. Your output must match the reference exactly on a held-out set.').scores.verifiable === true, 'exact-match / held-out grading is recognized as a checkable success condition');
 
 console.log('\n== the collapse: where the spec goes undefinable ==');
 ok(B.ambiguities.length >= 5, `flagged the undefinable terms in the vague task (${B.ambiguities.length}: e.g. ${B.ambiguities.slice(0, 3).map((v) => '"' + v.term + '"').join(', ')})`);

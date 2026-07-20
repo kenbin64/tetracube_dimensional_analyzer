@@ -11,7 +11,7 @@ const VERBS = ['create', 'build', 'implement', 'add', 'write', 'make', 'ensure',
 const CONSTRAINT = /\b(must not|must|should not|should|cannot|can't|only|at most|at least|no more than|no fewer than|within|exactly|required|never|always|limited to|maximum|minimum)\b/i;
 const INPUT = /\b(input|inputs|given|takes|accepts?|argument|arguments|parameter|parameters|reads? from|stdin|from (a|the) file|provided)\b/i;
 const OUTPUT = /\b(output|outputs|returns?|produces?|prints?|writes? to|result|results|response|stdout|exit code)\b/i;
-const ACCEPT = /\b(test|tests|verif\w*|expected|passes|assert\w*|acceptance|succeeds? when|correct output|should (return|equal|output|print|exit))\b/i;
+const ACCEPT = /\b(test|tests|verif\w*|expected|passes|assert\w*|acceptance|succeeds? when|correct output|should (return|equal|output|print|exit)|match(es|ed)? (exactly|the reference)|exact(ly)? match|must match|byte[- ]identical|held[- ]?out|graded (on|against))\b/i;
 const DEP = /\b(after|then|once|afterwards|using the|based on|from the (previous|prior|first)|depends on|before you|first,|second,|third,|next,|finally,|subsequently)\b/i;
 
 // where a spec collapses to the undefinable: subjective, open-ended, or unchecked terms
