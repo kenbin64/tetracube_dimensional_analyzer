@@ -26,7 +26,10 @@ a browser sandbox cannot silently read system folders).
 - **User choice:** the user adds or removes any folders/files they want included. We never choose for them.
 - **Passive connectors:** read-only, schema-agnostic. The app does not prescribe, reach out, or mutate.
   It passively reads whatever the user points it at, and the engine organizes whatever shape comes back.
-  One generic connector pattern, not a pile of specific integrations.
+  One generic connector pattern, not a pile of specific integrations. We cannot anticipate every source,
+  so we do not try: beyond the starter registry, the user supplies ANY source, a REST endpoint, a
+  software app's API, a URL, a file, through one generic "Add a source" connector. Everything, starter
+  or user-supplied, is passive and read-only.
 - **Pointer system (APIs + datastores + software):** a pointer is an *address*, not a copy. The user
   registers a source, an API endpoint, a datastore, or another piece of software, and the app holds the
   pointer; the data blooms at runtime only when the user traverses to it. Decoupled by default,
