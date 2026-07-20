@@ -4,7 +4,7 @@
 
 // The task-description analyzer (the reason another project pulls this in).
 export { analyzeTask, taskReport } from './taskanalyzer.mjs';
-export { lintDynamoTask, dynamoLintReport } from './dynamotask.mjs';
+export { lintDynamoTask, dynamoLintReport, crossFileChecks, auditDynamoTask } from './dynamotask.mjs';
 
 // The engine underneath: store the generator, derive the field. Lossless rule + residual.
 export { seed, bloom, seedBest, shaSeq, structureScore } from './seedbloom.mjs';

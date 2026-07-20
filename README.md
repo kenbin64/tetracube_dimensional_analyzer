@@ -5,7 +5,7 @@ structure, decomposes it into its dimensions, and rebuilds it byte-for-byte. Eve
 page is backed by a test you can run in under a minute. No network, no framework, no magic.
 
 ```
-123 green checks across 15 receipts, 0 failed
+128 green checks across 15 receipts, 0 failed
 ```
 
 > **Using this from another agent?** It reads task descriptions **deterministically**, with no AI in the loop, which is exactly the point when the tasks are built to stymie AI. See [`AGENTS.md`](AGENTS.md).
@@ -64,7 +64,7 @@ Structureless data stays lossless and simply gains nothing. That honesty is the 
 | Self-verifying capsule | Manifest carries sha256 + provenance; a tampered byte or residual is rejected on rebuild. | `test_capsule.mjs` (7) |
 | File-type guard + adoption bar | Report-only for order-sensitive formats, decode media, skip opaque binaries; adopt only on a wide win over the incumbent codec. | `test_policy.mjs` (15) |
 | Task-description analyzer (non-AI) | Reads a task into requirements, dependencies, constraints, and the points where the spec collapses into the undefinable. Deterministic, lossless, no model in the loop. | `test_taskanalyzer.mjs` (13) |
-| Stump-task linter (non-AI) | Flags the failure modes of AI-defeating tasks: solution-method disclosure, recovery/secret framing, lazy ambiguity, missing exact/held-out grading, relative paths, token budget. Reports, does not judge. | `test_dynamotask.mjs` (9) |
+| Stump-task linter (non-AI) | Whole-task audit against the reviewer failure areas + 12-item self-check: method/answer disclosure in any agent-readable file, recovery framing, lazy ambiguity, unstated verifier keys, unprotected ground truth, injection text, paths, token budget. Reports, does not judge. | `test_dynamotask.mjs` (14) |
 
 ## Run it yourself
 

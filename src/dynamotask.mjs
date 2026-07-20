@@ -80,6 +80,81 @@ export function lintDynamoTask(text) {
   };
 }
 
+// Cross-file audit against the reviewer's failure areas + the 12-item self-check, from file TEXTS
+// (no fs, so it stays testable). instruction = instruction.md, verifier = tests/test_outputs.py,
+// envFiles = [{name, text}] for everything under environment/ the agent can read.
+const INJECTION = [
+  /ignore (all |the |any )?(previous|above|prior|earlier) (instructions|prompts?|rules)/i,
+  /reveal (the )?(answer|solution|expected|ground.?truth)/i, /disregard the task/i,
+  /rm\s+-rf\s+[\/~]/, /curl[^\n|]*\|\s*(ba)?sh/, /wget[^\n|]*\|\s*(ba)?sh/, /base64\s+-d/,
+  /:\(\)\s*\{.*\};:/, /\bchmod\s+777\b/,
+];
+export function crossFileChecks({ instruction = '', verifier = '', envFiles = [] }) {
+  const fails = [], warns = [], notes = [];
+  const inl = instruction.toLowerCase();
+  const named = (f) => inl.includes(f.toLowerCase()) || inl.includes(('/app/' + f).toLowerCase());
+
+  // Item 3: raw-byte / raw-text output comparison rejects valid answers over serialization.
+  if (/\.read_text\(\)\s*==|\.read_bytes\(\)\s*==|==\s*open\([^)]*\)\.read\(\)/.test(verifier))
+    warns.push({ code: 'raw-byte-compare', terms: [], msg: 'verifier compares raw bytes/text (Area 3: compare PARSED values; a trailing newline would reject a valid answer)' });
+
+  // Item 12: if the VERIFIER reads a shipped /app input, it must hash-pin it or the agent can mutate
+  // it to fake a pass. (Keyed off the verifier, not the instruction: a verifier that generates its
+  // own held-out and never trusts an /app file needs no pin.)
+  const readsAppInput = /open\(\s*["']\/app\/[\w.\-]+|\/app\/[\w.\-]+\.(json|csv|txt|wav|bin|jsonl)["']/.test(verifier);
+  if (readsAppInput && !/(hashlib|sha256|byte-identical|_unchanged)/i.test(verifier))
+    warns.push({ code: 'no-input-hashpin', terms: [], msg: 'no hash-pin/byte-check on the shipped /app input (Area 4/item 12: agent could rewrite it to fake a pass)' });
+
+  // Item 12: verifier should reject a symlink at the artifact path.
+  if (readsAppInput && !/islink|is_symlink|realpath|O_NOFOLLOW/i.test(verifier))
+    notes.push({ code: 'no-symlink-guard', terms: [], msg: 'verifier does not reject symlinks at the artifact path (Area 4/item 12: agent could alias its output to the answer)' });
+
+  // Item 11: a verifier with no independent recompute and only surface checks lets fabrications pass.
+  const recomputes = /(build_heldout|true_|SECRET|reference|recompute|_ref|ground)/.test(verifier);
+  const surfaceOnly = /assert\s+(len|isinstance|type)\(/.test(verifier) && !/assert.*(==|abs\(|match)/.test(verifier);
+  if (!recomputes || surfaceOnly)
+    warns.push({ code: 'surface-verifier', terms: [], msg: 'verifier may be surface-only (no independent recompute of the answer) (Area 3/item 11: ask "could someone fake this and pass?")' });
+
+  // Item 6/8: scan agent-readable environment files for method/answer disclosure and injection.
+  for (const { name, text } of envFiles) {
+    const isData = /\.(json|jsonl|csv|bin|wav)$/i.test(name);
+    for (const rx of INJECTION) if (rx.test(text)) { fails.push({ code: 'injection', terms: [name], msg: `agent-readable file contains injection/destructive text (item 8): ${name}` }); break; }
+    if (!isData) { // code/config/README files must not disclose method or answer
+      const leakTerms = hits(text.toLowerCase(), METHOD_HOWTO).concat(/expected output|the correct answer|the solution is|ground.?truth/i.test(text) ? ['answer-hint'] : []);
+      if (leakTerms.length) warns.push({ code: 'env-discloses', terms: [name, ...leakTerms.slice(0, 4)], msg: `environment file discloses method/answer (item 6): ${name}` });
+    }
+  }
+  // Item 4/12: answer-shaped filename in the agent image.
+  const leakNames = envFiles.map((f) => f.name).filter((f) => /answer|solution|expected|ground.?truth|secret|_key|target/i.test(f));
+  if (leakNames.length) fails.push({ code: 'answer-in-env', terms: leakNames, msg: 'environment/ file looks like an answer key (Area 4: ground truth must live in tests/)' });
+
+  // Item 7: every shipped data file the agent gets should be named in the instruction.
+  const unref = envFiles.map((f) => f.name).filter((f) => /\.(json|csv|txt|wav|bin|jsonl)$/i.test(f) && !named(f));
+  if (unref.length) notes.push({ code: 'unreferenced-file', terms: unref, msg: 'shipped file not named in instruction (item 7: name every file the agent should use, or the env is steering it)' });
+
+  // Item 1/2: verifier enforces output keys the instruction never names.
+  const keys = new Set();
+  for (const m of verifier.matchAll(/\b(?:result|out|got|output|pred|preds|data)\s*\[\s*["']([\w-]{2,})["']\s*\]/g)) keys.add(m[1]);
+  for (const m of verifier.matchAll(/\.keys\(\)\)?\s*==\s*\{([^}]*)\}/g))
+    for (const k of m[1].matchAll(/["']([\w-]{2,})["']/g)) keys.add(k[1]);
+  const missing = [...keys].filter((k) => !inl.includes(k.toLowerCase()));
+  if (missing.length)
+    warns.push({ code: 'unstated-keys', terms: missing.slice(0, 8), msg: 'verifier references output keys not named in instruction (Area 1/item 2) - confirm each is stated' });
+
+  return { fails, warns, notes };
+}
+
+// Full task audit: instruction lint + cross-file checks, merged into one verdict.
+export function auditDynamoTask({ instruction = '', verifier = '', envFiles = [] }) {
+  const instr = lintDynamoTask(instruction);
+  const cf = crossFileChecks({ instruction, verifier, envFiles });
+  const fails = [...instr.fails, ...cf.fails];
+  const warns = [...instr.warns, ...cf.warns];
+  const notes = [...instr.notes, ...cf.notes];
+  const verdict = fails.length ? 'FAIL' : warns.length ? 'PASS_WARN' : 'PASS';
+  return { verdict, tokens: instr.tokens, structure: instr.structure, scores: instr.scores, fails, warns, notes };
+}
+
 export function dynamoLintReport(r) {
   const lines = [];
   lines.push(`structure : requirements ${r.structure.requirements}  couplings ${r.structure.couplings}  complexity ${r.structure.complexity}  | ~${r.tokens} tokens`);
