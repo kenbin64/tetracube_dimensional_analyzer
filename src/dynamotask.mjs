@@ -155,8 +155,24 @@ export function crossFileChecks({ instruction = '', verifier = '', envFiles = []
     }
   }
   // Item 4/12: answer-shaped filename in the agent image.
+  // A worked EXAMPLE and its answer is legitimate when the verifier synthesises its own held-out
+  // instance, so it leaks nothing graded. That is a different (and worse) problem: an example the
+  // agent can score itself against is a guiding oracle, which is a difficulty issue, not a leak.
+  // Flagging it as a leak sent us chasing the wrong defect once already, so separate the two.
   const leakNames = envFiles.map((f) => f.name).filter((f) => /answer|solution|expected|ground.?truth|secret|_key|target/i.test(f));
-  if (leakNames.length) fails.push({ code: 'answer-in-env', terms: leakNames, msg: 'environment/ file looks like an answer key (Area 4: ground truth must live in tests/)' });
+  const verifierGenerates = /random\.Random\(|randbits|_gen_|build_heldout|synthes/i.test(verifier);
+  const exampleOnly = leakNames.length > 0 && verifierGenerates;
+  if (leakNames.length && !exampleOnly) {
+    fails.push({ code: 'answer-in-env', terms: leakNames, msg: 'environment/ file looks like an answer key (Area 4: ground truth must live in tests/)' });
+  } else if (exampleOnly) {
+    warns.push({
+      code: 'example-is-oracle',
+      terms: leakNames,
+      msg: 'the verifier generates its own held-out instance, so this leaks nothing graded, BUT a '
+        + 'shipped example the agent can score itself against is a guiding oracle and caps difficulty '
+        + '(measured: it is what held 47f3bb3 at 3/5 and made the CDC task transcription)',
+    });
+  }
 
   // Item 7: every shipped data file the agent gets should be named in the instruction.
   const unref = envFiles.map((f) => f.name).filter((f) => /\.(json|csv|txt|wav|bin|jsonl)$/i.test(f) && !named(f));
