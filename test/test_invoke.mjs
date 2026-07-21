@@ -2,7 +2,7 @@
 // spark plug must not cost the whole car, and must not grow when the space grows.
 import {
   createSpace, ingest, invoke, collapse, expand, countAt, relate, resetMeter,
-  setManifold, verifyManifold, consult, acquire, induce, maintain, shedEnumeration,
+  setManifold, verifyManifold, consult, acquire, induce, maintain, shedEnumeration, ask,
 } from '../src/invoke.mjs';
 import { encapsulate, decapsulate } from '../src/relational.mjs';
 
@@ -208,6 +208,64 @@ const contradicts = maintain(plugSpace, 'sparkplug', [{ at: { heatRange: 5 }, is
 ok(!contradicts.held, 'grain that contradicts it invalidates the manifold: ' + contradicts.why);
 ok(!consult(plugSpace, 'sparkplug', { heatRange: 6 }).grounded,
   'an invalidated manifold STOPS answering rather than quietly being wrong');
+
+console.log('\n== no one thing holds all the answers: the relationship is composed ==');
+// "Will this plug seat and fire in this engine?" No single dimension can answer it. The plug knows
+// its thread and its spark potential. The head knows the thread it was cut for and what it needs to
+// fire. The answer only exists between them, and only when someone asks.
+const fit = createSpace();
+ingest(fit, [{ engine: { head: { thread: 'M14x1.25', bore: 86 } },
+               cylinder: { sparkplug: { brand: 'NGK', heatRange: 6 } } }]);
+
+setManifold(fit, 'sparkplug', {
+  describes: 'what a plug of this heat range is and can do',
+  derive: ({ heatRange }) => (heatRange >= 2 && heatRange <= 12
+    ? { thread: 'M14x1.25', sparkPotential: Math.round(GAP(heatRange) * 680000) } : null),
+  samples: [{ at: { heatRange: 6 }, is: { thread: 'M14x1.25' } }],
+});
+setManifold(fit, 'head', {
+  describes: 'what this head is cut for and what it takes to fire it',
+  derive: ({ bore }) => (bore > 0 ? { thread: 'M14x1.25', needsToFire: 28000 } : null),
+  samples: [{ at: { bore: 86 }, is: { thread: 'M14x1.25' } }],
+});
+
+resetMeter(fit);
+const willFit = ask(fit, {
+  question: 'will this plug seat and fire in this head?',
+  need: [
+    { dimension: 'sparkplug', at: { heatRange: 6 }, as: 'plug' },
+    { dimension: 'head', at: { bore: 86 }, as: 'head' },
+  ],
+  combine: ({ plug, head }) => ({
+    seats: plug.thread === head.thread,
+    fires: plug.sparkPotential >= head.needsToFire,
+  }),
+});
+ok(willFit.grounded && willFit.value.seats && willFit.value.fires,
+  'an answer neither dimension holds alone is composed from both on demand');
+ok(willFit.from.length === 2 && space.touches >= 0 && fit.touches === 2,
+  `composing cost ${fit.touches}, one consult per dimension the question actually needed`);
+
+// A leg that cannot answer sinks the whole answer, and is named. No partial dressed up as whole.
+const noLeg = ask(fit, {
+  question: 'will it fire in a turbine?',
+  need: [
+    { dimension: 'sparkplug', at: { heatRange: 6 }, as: 'plug' },
+    { dimension: 'turbine', at: {}, as: 'turbine' },
+  ],
+  combine: ({ plug, turbine }) => ({ ok: plug.thread === turbine.thread }),
+});
+ok(!noLeg.grounded && noLeg.missing[0].dimension === 'turbine',
+  'a missing leg refuses the whole answer and names it: ' + noLeg.why);
+
+// Grounded parts that simply do not meet still refuse, rather than inventing a verdict.
+const offEdgePlug = ask(fit, {
+  question: 'what about a heat range we cannot reach?',
+  need: [{ dimension: 'sparkplug', at: { heatRange: 99 }, as: 'plug' },
+         { dimension: 'head', at: { bore: 86 }, as: 'head' }],
+  combine: ({ plug, head }) => ({ seats: plug.thread === head.thread }),
+});
+ok(!offEdgePlug.grounded, 'past one dimension edge the composed answer stops too: ' + offEdgePlug.why);
 
 console.log('\n== the interior is never lost: encapsulate round-trips ==');
 // encapsulate sorts keys, so compare canonically: same structure, key order is not information.

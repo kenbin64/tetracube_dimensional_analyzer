@@ -279,6 +279,46 @@ export function shedEnumeration(space, name, aspects) {
 // costs the depth of the point, not the breadth of the structure. Nothing is precomputed, so
 // nothing has to be maintained, and an ungrounded pairing simply does not resolve.
 
+// ── compose: no one thing holds all the answers ──────────────────────────────
+// Things are made of parts, and each part has its own attributes. So most real questions are not
+// answerable from any single dimension: they have to be put together across several, at the moment
+// of asking. That is why the relationship has to be MADE rather than looked up.
+//
+// Every leg must be grounded. If one dimension cannot answer its part, the composed answer does not
+// resolve, and we name the leg that failed instead of returning a partial that reads as whole.
+
+export function ask(space, { need, combine, question = '' }) {
+  const legs = [], missing = [];
+  for (const { dimension, at, as } of need) {
+    const r = consult(space, dimension, at);
+    if (!r.grounded) { missing.push({ dimension, why: r.why }); continue; }
+    legs.push({ as: as || dimension, dimension, value: r.value });
+  }
+  if (missing.length) {
+    return {
+      grounded: false,
+      question,
+      why: `cannot answer: ${missing.map((m) => `${m.dimension} (${m.why})`).join('; ')}`,
+      missing,
+      value: null,
+    };
+  }
+  const parts = {};
+  for (const l of legs) parts[l.as] = l.value;
+
+  let value;
+  try { value = combine(parts); } catch (e) {
+    return { grounded: false, question, why: String(e), value: null, from: legs.map((l) => l.dimension) };
+  }
+  if (value === undefined || value === null) {
+    return {
+      grounded: false, question, value: null, from: legs.map((l) => l.dimension),
+      why: 'the parts are grounded but they do not combine into an answer here',
+    };
+  }
+  return { grounded: true, question, value, from: legs.map((l) => l.dimension), parts };
+}
+
 function lineage(space, point) {
   const line = [];
   let cur = point;
