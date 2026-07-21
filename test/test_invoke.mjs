@@ -2,7 +2,7 @@
 // spark plug must not cost the whole car, and must not grow when the space grows.
 import {
   createSpace, ingest, invoke, collapse, expand, countAt, relate, resetMeter,
-  setManifold, verifyManifold, consult, acquire, induce, maintain, shedEnumeration, ask,
+  setManifold, verifyManifold, consult, acquire, induce, maintain, shedEnumeration, ask, hold, heldCount,
 } from '../src/invoke.mjs';
 import { encapsulate, decapsulate } from '../src/relational.mjs';
 
@@ -266,6 +266,45 @@ const offEdgePlug = ask(fit, {
   combine: ({ plug, head }) => ({ seats: plug.thread === head.thread }),
 });
 ok(!offEdgePlug.grounded, 'past one dimension edge the composed answer stops too: ' + offEdgePlug.why);
+
+console.log('\n== holding data is the LAST RESORT ==');
+// No prior input at all. Nothing ingested, no records, no rows. Just the manifold.
+const fromNothing = createSpace();
+setManifold(fromNothing, 'sparkplug', {
+  describes: 'what a plug of a given heat range is, with no data collected',
+  derive: ({ heatRange }) => (heatRange >= 2 && heatRange <= 12
+    ? { gap: GAP(heatRange), sparkPotential: Math.round(GAP(heatRange) * 680000) } : null),
+  samples: [],                       // nothing observed, nothing to reproduce
+});
+ok(fromNothing.points.size === 0, 'the space holds zero points: nothing was ever ingested');
+const cold = consult(fromNothing, 'sparkplug', { heatRange: 8 });
+ok(cold.grounded && cold.value.gap === GAP(8),
+  `it answers anyway, from the manifold alone: gap ${cold.value?.gap} at heat range 8`);
+
+// Now offer it a hundred facts. It should keep almost none of them, because it can already derive
+// them. What it keeps is the residual, and only the residual.
+let offered = 0;
+for (let hr = 2; hr <= 12; hr++) {
+  for (let rep = 0; rep < 9; rep++) { hold(fromNothing, 'sparkplug', { heatRange: hr }, { gap: GAP(hr) }); offered++; }
+}
+ok(offered === 99 && heldCount(fromNothing) === 0,
+  `offered ${offered} facts it can already derive and kept ${heldCount(fromNothing)} of them`);
+
+// The exceptions are what earn storage: a plug that does not follow the relation, and one past the
+// edge of what the manifold reaches.
+const oddball = hold(fromNothing, 'sparkplug', { heatRange: 6 }, { gap: 0.070 });
+const beyond = hold(fromNothing, 'sparkplug', { heatRange: 40 }, { gap: 0.101 });
+ok(oddball.held && beyond.held, 'the two facts it could NOT derive are kept: ' + oddball.why);
+ok(heldCount(fromNothing) === 2,
+  `after ${offered + 2} facts the store holds ${heldCount(fromNothing)}: data is the residual, nothing more`);
+
+// And what we actually observed outranks what we can derive.
+const observed = consult(fromNothing, 'sparkplug', { heatRange: 6 });
+ok(observed.grounded && observed.value.gap === 0.070 && observed.derived === false,
+  'the held exception answers in place of the derivation, marked as observed not derived');
+const stillDerived = consult(fromNothing, 'sparkplug', { heatRange: 7 });
+ok(stillDerived.grounded && stillDerived.derived === true,
+  'while every heat range without an exception is still derived, not stored');
 
 console.log('\n== the interior is never lost: encapsulate round-trips ==');
 // encapsulate sorts keys, so compare canonically: same structure, key order is not information.

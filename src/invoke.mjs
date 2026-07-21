@@ -159,9 +159,47 @@ export function verifyManifold(space, name) {
   return m.verified;
 }
 
+// ── holding data is the last resort ──────────────────────────────────────────
+// A great deal can be derived from the manifold, so no prior input is needed to answer. That makes
+// stored data the RESIDUAL: we hold only what the manifold cannot give us. Before anything is kept,
+// it has to fail the derivability test, and most of it does not.
+
+const atKey = (at) => JSON.stringify(Object.keys(at).sort().reduce((o, k) => (o[k] = at[k], o), {}));
+
+export function derivable(space, name, at, value) {
+  const r = consult(space, name, at);
+  if (!r.grounded) return { derivable: false, why: r.why };
+  const disagrees = Object.keys(value).filter((k) => r.value[k] !== value[k]);
+  if (disagrees.length) {
+    return { derivable: false, why: `manifold reaches it but disagrees on ${disagrees.join(', ')}` };
+  }
+  return { derivable: true, why: 'the manifold already gives this' };
+}
+
+// Offer a fact to the space. It is kept only if it cannot be derived. This is the last resort, and
+// what gets kept is exactly the residual.
+export function hold(space, name, at, value) {
+  const d = derivable(space, name, at, value);
+  if (d.derivable) return { held: false, why: 'not held: ' + d.why };
+  if (!space.held) space.held = new Map();
+  const key = `${name}|${atKey(at)}`;
+  space.held.set(key, { name, at, value });
+  return { held: true, why: 'held as residual: ' + d.why };
+}
+
+export function heldCount(space) { return space.held ? space.held.size : 0; }
+
 // Consult the manifold for grain we never stored. One touch, whatever the size of the field it
 // describes: that is the point of holding the generator rather than the field.
 export function consult(space, name, at) {
+  // What we actually observed outranks what we can derive. A residual is kept precisely because the
+  // manifold could not produce it, so it answers first.
+  const heldHit = space.held?.get(`${name}|${atKey(at)}`);
+  if (heldHit) {
+    space.touches += 1;
+    return { grounded: true, why: '', value: heldHit.value, derived: false, from: `${name} held residual` };
+  }
+
   const m = space.manifolds?.get(name);
   if (!m) return { grounded: false, why: `${name} has no manifold to consult`, value: null };
 
