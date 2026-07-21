@@ -138,6 +138,17 @@ expands (`z = x/y`, eager, returns all the parts). They are a faithful inverse o
 a lossless encapsulation, which is why the residual is never optional. `PRIMER.md` is the full design
 constitution and the honest-guard list that governs the build.
 
+## Documentation
+
+- **[docs/DIMENSIONAL-CORE.md](docs/DIMENSIONAL-CORE.md)** - the analysis method in full: a
+  dimension is a type whose name is its address; collapse is encapsulation and a whole below counts
+  as exactly one above; nothing is traversed unless inventory is the purpose; a dimension may hold a
+  manifold instead of every aspect; holding data is the last resort. Includes the API, the fences
+  that keep derivation from becoming invention, and the table of what each receipt actually proves.
+- **[docs/DYNAMO-TASK-MANIFOLD.md](docs/DYNAMO-TASK-MANIFOLD.md)** - the same method applied to one
+  question, deterministically and with no model in the loop.
+- **[docs/PRODUCT-SPEC.md](docs/PRODUCT-SPEC.md)** - the product this engine is for.
+
 The deeper method (how rules are found and applied at scale) is kept private by design. What is
 published here is the concept and the runnable results.
 

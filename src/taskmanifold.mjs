@@ -10,9 +10,11 @@
 
 // ── the axes a task is decomposed onto ───────────────────────────────────────
 export const AXES = {
-  selfVerifiable:
-    'can the agent check a hypothesis for free against what it was handed? intact stripes, sample '
-    + 'pairs, or an answer that validates itself all act as a local oracle',
+  oracleGuidesSearch:
+    'not merely "can the agent check a guess" but "does checking NARROW the search". Intact stripes '
+    + 'determine the system, so checking walks you to the answer. Labelled points with an unknown '
+    + 'degree AND unknown modulus are checkable yet guide nothing, because a failed candidate says '
+    + 'nothing about where to look next',
   frameGiven:
     'does the domain vocabulary name the correct method? "parity record" tells a storage engineer '
     + 'to solve a linear system, and hands over the frame for nothing',
@@ -27,35 +29,40 @@ export const AXES = {
 // Every row here is an outcome we ran, not an estimate. `stumps` is the ground truth.
 export const MEASURED = [
   { task: 'dynamo-8333840 recover-decision-rule', outcome: 'pass@5 0/5', stumps: true,
-    at: { selfVerifiable: false, frameGiven: false, reflexConfidentlyWrong: true, smoothCrux: false } },
+    at: { oracleGuidesSearch: false, frameGiven: false, reflexConfidentlyWrong: true, smoothCrux: false } },
   { task: 'dynamo-3b8c2d6 keyed modular checksum', outcome: 'pass@2 0/2', stumps: true,
-    at: { selfVerifiable: false, frameGiven: true, reflexConfidentlyWrong: true, smoothCrux: false } },
+    at: { oracleGuidesSearch: false, frameGiven: true, reflexConfidentlyWrong: true, smoothCrux: false } },
   { task: 'dynamo-47f3bb3 v2 secret modulus', outcome: 'pass@5 3/5', stumps: false,
-    at: { selfVerifiable: true, frameGiven: true, reflexConfidentlyWrong: true, smoothCrux: false } },
+    at: { oracleGuidesSearch: true, frameGiven: true, reflexConfidentlyWrong: true, smoothCrux: false } },
   { task: 'dynamo-47f3bb3 v3 secret coefficients', outcome: 'pass@5 3/5', stumps: false,
-    at: { selfVerifiable: true, frameGiven: true, reflexConfidentlyWrong: true, smoothCrux: false } },
+    at: { oracleGuidesSearch: true, frameGiven: true, reflexConfidentlyWrong: true, smoothCrux: false } },
   { task: 'dynamo-3b8c2d6 v1 format-from-samples', outcome: 'pass@2 2/2', stumps: false,
-    at: { selfVerifiable: true, frameGiven: true, reflexConfidentlyWrong: false, smoothCrux: false } },
+    at: { oracleGuidesSearch: true, frameGiven: true, reflexConfidentlyWrong: false, smoothCrux: false } },
   { task: 'dynamo-fb6f02d chart layout', outcome: 'pass@2 2/2', stumps: false,
-    at: { selfVerifiable: true, frameGiven: true, reflexConfidentlyWrong: false, smoothCrux: true } },
+    at: { oracleGuidesSearch: true, frameGiven: true, reflexConfidentlyWrong: false, smoothCrux: true } },
   { task: 'crypto key-recovery', outcome: 'solved 2/2 both regimes', stumps: false,
-    at: { selfVerifiable: true, frameGiven: true, reflexConfidentlyWrong: false, smoothCrux: false } },
+    at: { oracleGuidesSearch: true, frameGiven: true, reflexConfidentlyWrong: false, smoothCrux: false } },
+  // HELD OUT: scored from its design, then checked. dynamo-bbb74dc #3 carries the accepted label,
+  // so it cleared the difficulty gate. The manifold had not seen it when the rule was written.
+  { task: 'dynamo-bbb74dc recover-screening-rule', outcome: 'PR accepted (cleared difficulty)', stumps: true,
+    at: { oracleGuidesSearch: false, frameGiven: false, reflexConfidentlyWrong: true, smoothCrux: false } },
 ];
 
 // ── the manifold ─────────────────────────────────────────────────────────────
-// A local oracle is decisive: if the agent can score its own guesses for free, it will search until
-// it wins, and nothing buried inside the frame changes that. Without one, the task holds when the
-// agent is either pointed at the wrong method or has no idea which method to reach for.
+// A GUIDING oracle is decisive. The question is not whether the agent can check a guess, it is
+// whether checking narrows the search. When it does, the agent walks to the answer and nothing
+// buried inside the frame changes that. When it does not, the task holds if the agent is either
+// pointed at the wrong method or has no idea which method to reach for.
 export function derive(at) {
   for (const k of Object.keys(AXES)) if (typeof at[k] !== 'boolean') return null;   // off the edge
 
   if (at.smoothCrux) {
     return { stumps: false, because: 'the crux is smooth, so it is a regression and the agent fits it' };
   }
-  if (at.selfVerifiable) {
+  if (at.oracleGuidesSearch) {
     return {
       stumps: false,
-      because: 'the agent can score its own hypotheses for free, so it searches until it wins; '
+      because: 'checking a guess narrows the search, so the agent walks to the answer; '
         + 'burying more secrets inside the frame does not change that',
     };
   }
@@ -63,11 +70,11 @@ export function derive(at) {
     return {
       stumps: true,
       because: !at.frameGiven
-        ? 'no local oracle and the domain does not name the method, so the agent must find the frame itself'
-        : 'no local oracle, and the reflex returns a confident wrong answer rather than failing loudly',
+        ? 'checking does not narrow the search and the domain does not name the method, so the agent must find the frame itself'
+        : 'checking does not narrow the search, and the reflex returns a confident wrong answer rather than failing loudly',
     };
   }
-  return null;    // no local oracle, frame handed over, reflex fails loudly: never measured
+  return null;    // no guiding oracle, frame handed over, reflex fails loudly: never measured
 }
 
 // ── the fence: it may only speak because it reproduces what we measured ──────
@@ -107,7 +114,7 @@ export function unobserved() {
     for (const fg of [false, true]) {
       for (const rw of [false, true]) {
         for (const sc of [false, true]) {
-          const at = { selfVerifiable: sv, frameGiven: fg, reflexConfidentlyWrong: rw, smoothCrux: sc };
+          const at = { oracleGuidesSearch: sv, frameGiven: fg, reflexConfidentlyWrong: rw, smoothCrux: sc };
           if (!seen.has(key(at))) gaps.push({ at, derives: derive(at) });
         }
       }
