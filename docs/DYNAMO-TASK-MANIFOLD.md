@@ -162,3 +162,40 @@ fit, which is the only honest direction to resolve it.
 
 **Model drift.** Every outcome here is Opus-4.8 with Terminus-2 on Daytona. A different benchmark
 model invalidates the evidence base, not just individual rows.
+
+---
+
+## 8. Registered predictions
+
+Written down **before** the outcome is known, so they can falsify the manifold rather than be fitted
+to it after the fact. Dated 2026-07-21.
+
+### P1 — DFA inference from labelled traces (`pastTasks/current_task.txt`), in flight
+
+Scored: `oracleGuidesSearch: true`, `frameGiven: false`, `reflexConfidentlyWrong: true`,
+`smoothCrux: false`.
+
+**Predicted: TOO EASY.** The labelled traces read as a classification dataset, so the frame is
+genuinely misleading and the reflex (n-gram, feature model, small network) returns confident wrong
+labels. But state-merging inference (RPNI and relatives) uses those same labels to guide the merge,
+so checking a hypothesis narrows the search, and that axis dominates.
+
+**Confidence: low.** `oracleGuidesSearch` is a judgement here, not a measurement. Exact minimal-DFA
+inference is NP-hard in general, and if the hidden monitor combines a modular count with a forbidden
+substring, the merge may not converge from the sample given. If it stumps, the axis is wrong as
+scored and the manifold must be re-derived rather than excused.
+
+Either outcome is informative. Agreement widens the evidence to nine. Contradiction invalidates and
+teaches more than agreement would.
+
+### P2 — Counting under a template-breaking constraint, not yet built
+
+Scored: `oracleGuidesSearch: false`, `frameGiven: true`, `reflexConfidentlyWrong: true`,
+`smoothCrux: false`.
+
+**Predicted: STUMPS.** A count at N around 1e18 cannot be self-checked, so there is no guiding
+oracle at all. Aho-Corasick plus matrix exponentiation is the named template and the position weight
+breaks it, so the reflex returns a confident wrong number rather than failing.
+
+It also carries a mechanism distinct from the finite-field recovery engine used repeatedly so far,
+which matters for the range a human reviewer is looking for.
