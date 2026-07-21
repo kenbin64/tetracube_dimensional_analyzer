@@ -141,11 +141,15 @@ export function verifyManifold(space, name) {
   if (!m) return { ok: false, why: `no manifold for ${name}` };
   if (m.verified) return m.verified;
 
+  // Agreement is judged only on the aspects we actually observed. A manifold is allowed to reach
+  // further than the grain we hold, which is exactly what makes potential answerable: nobody ever
+  // recorded the spark potential, the manifold yields it. What it may NOT do is disagree about
+  // something we did observe.
   const misses = [];
   for (const s of m.samples) {
     let got;
     try { got = m.derive(s.at); } catch (e) { got = { error: String(e) }; }
-    if (JSON.stringify(got) !== JSON.stringify(s.is)) {
+    if (!got || Object.keys(s.is).some((k) => got[k] !== s.is[k])) {
       misses.push({ at: s.at, expected: s.is, got });
     }
   }
@@ -171,6 +175,103 @@ export function consult(space, name, at) {
     return { grounded: false, why: `${name}'s manifold does not reach ${JSON.stringify(at)}`, value: null };
   }
   return { grounded: true, why: '', value, derived: true, from: `${name} manifold`, checked: v.checked };
+}
+
+// ── the lifecycle: acquire once, induce, then the manifold carries it ────────
+// At one time the system needs ALL the info of the spark plug, from wherever it can get it. That
+// full gather is expensive and that is fine, because at that moment it IS the purpose. Once it is
+// had, a manifold can be induced from it, and from then on the individual aspects are encoded by
+// the manifold, for as long as that manifold is maintained.
+//
+// Maintenance is not decoration either. A manifold's authority lasts exactly as long as it keeps
+// reproducing what we know. New grain that contradicts it invalidates it, and an invalidated
+// manifold stops answering instead of quietly being wrong.
+
+// ACQUIRE: gather every aspect of every point of this type. `by` names the axes that identify a
+// case, `of` names the aspects we want to be able to answer about later.
+export function acquire(space, name, { by, of }) {
+  const ids = space.byName?.get(name) || [];
+  const samples = [];
+  for (const id of ids) {
+    const p = touch(space, space.points.get(id));
+    const at = {}, is = {};
+    let complete = true;
+    for (const k of by) {
+      if (!(k in p.coord)) { complete = false; break; }
+      at[k] = p.coord[k];
+    }
+    if (!complete) continue;
+    for (const k of of) if (k in p.coord) is[k] = p.coord[k];
+    if (Object.keys(is).length) samples.push({ at, is, id });
+  }
+  return samples;
+}
+
+// INDUCE: find a generator that reproduces EVERY acquired sample, not most of them. A candidate
+// that fits some and misses others is rejected outright: a manifold that is right about the grain
+// we happen to check and wrong elsewhere is worse than no manifold at all.
+export function induce(space, name, { by, of, candidates }) {
+  const samples = acquire(space, name, { by, of });
+  if (!samples.length) {
+    return { induced: false, why: `nothing acquired for ${name}: no grain to induce from`, samples: 0 };
+  }
+  for (const cand of candidates) {
+    const misses = samples.filter((s) => {
+      let got;
+      try { got = cand.derive(s.at); } catch { return true; }
+      return !got || of.some((k) => k in s.is && got[k] !== s.is[k]);
+    });
+    if (!misses.length) {
+      setManifold(space, name, { derive: cand.derive, samples, describes: cand.describes || '' });
+      verifyManifold(space, name);
+      return { induced: true, describes: cand.describes, covers: samples.length, why: '' };
+    }
+  }
+  return {
+    induced: false,
+    why: `no candidate reproduces all ${samples.length} acquired aspects of ${name}`,
+    samples: samples.length,
+  };
+}
+
+// MAINTAIN: hold the manifold against new grain. Agreement extends its evidence. Contradiction
+// invalidates it, and it stops answering until it is re-induced.
+export function maintain(space, name, observations) {
+  const m = space.manifolds?.get(name);
+  if (!m) return { held: false, why: `no manifold for ${name}` };
+
+  const contradictions = [];
+  for (const o of observations) {
+    let got;
+    try { got = m.derive(o.at); } catch (e) { got = null; }
+    if (!got || Object.keys(o.is).some((k) => got[k] !== o.is[k])) {
+      contradictions.push({ at: o.at, expected: o.is, got });
+    }
+  }
+  if (contradictions.length) {
+    m.verified = {
+      ok: false,
+      why: `manifold contradicted by ${contradictions.length} new observation(s); it no longer holds`,
+      contradictions,
+    };
+    return { held: false, why: m.verified.why, contradictions };
+  }
+  m.samples = m.samples.concat(observations);          // agreement widens the evidence it stands on
+  m.verified = { ok: true, why: '', checked: m.samples.length };
+  return { held: true, why: '', checked: m.samples.length };
+}
+
+// Once induced and verified, the enumerated aspects no longer have to be carried: the manifold
+// encodes them. This drops them and leaves the manifold answering in their place.
+export function shedEnumeration(space, name, aspects) {
+  const v = verifyManifold(space, name);
+  if (!v.ok) return { shed: false, why: `refusing to shed: ${v.why}` };
+  let dropped = 0;
+  for (const id of space.byName?.get(name) || []) {
+    const p = space.points.get(id);
+    for (const k of aspects) if (k in p.coord) { delete p.coord[k]; dropped++; }
+  }
+  return { shed: true, dropped, why: '' };
 }
 
 // ── relate: the relationship is made at the moment of asking ─────────────────

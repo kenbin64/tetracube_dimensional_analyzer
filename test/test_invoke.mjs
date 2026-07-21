@@ -2,7 +2,7 @@
 // spark plug must not cost the whole car, and must not grow when the space grows.
 import {
   createSpace, ingest, invoke, collapse, expand, countAt, relate, resetMeter,
-  setManifold, verifyManifold, consult,
+  setManifold, verifyManifold, consult, acquire, induce, maintain, shedEnumeration,
 } from '../src/invoke.mjs';
 import { encapsulate, decapsulate } from '../src/relational.mjs';
 
@@ -152,6 +152,62 @@ ok(!refused.grounded, 'a manifold that fails its own samples is refused, not tru
 
 ok(consult(space, 'wheels', { position: 'fl' }).grounded === false,
   'a dimension with no manifold says so rather than fabricating one');
+
+console.log('\n== acquire once, induce, then the manifold carries it ==');
+// A dedicated space, because this section deliberately sheds stored aspects.
+const plugSpace = createSpace();
+const plug = (hr) => ({
+  make: 'Make' + hr,
+  engine: { cylinder: { sparkplug: { brand: 'NGK', heatRange: hr, gap: GAP(hr) } } },
+});
+ingest(plugSpace, [plug(4), plug(6), plug(8), plug(10)]);
+
+// At one time we need ALL the info, from wherever we can get it. That gather is the purpose here,
+// so paying for it is correct.
+const gathered = acquire(plugSpace, 'sparkplug', { by: ['heatRange'], of: ['gap'] });
+ok(gathered.length === 4, `acquired every aspect we hold: ${gathered.length} spark plugs`);
+
+// Induction must reproduce EVERY acquired aspect. A candidate that fits some and misses others is
+// rejected, because being right about the grain we happen to check is worse than no manifold.
+const wrong = { describes: 'gap is constant', derive: () => ({ gap: 0.044 }) };
+const right = {
+  describes: 'gap opens with heat range; spark potential follows the gap',
+  derive: ({ heatRange }) => (heatRange >= 2 && heatRange <= 12
+    ? { gap: GAP(heatRange), sparkPotential: Math.round(GAP(heatRange) * 680000) }
+    : null),
+};
+
+const onlyWrong = induce(plugSpace, 'sparkplug', { by: ['heatRange'], of: ['gap'], candidates: [wrong] });
+ok(!onlyWrong.induced, 'a candidate that fits only some acquired grain is rejected: ' + onlyWrong.why);
+
+const got = induce(plugSpace, 'sparkplug', { by: ['heatRange'], of: ['gap'], candidates: [wrong, right] });
+ok(got.induced && got.covers === 4, `induced a manifold that reproduces all ${got.covers} acquired aspects`);
+
+// The payoff: spark potential is stored nowhere. Consult the manifold and it is there.
+const potential = consult(plugSpace, 'sparkplug', { heatRange: 7 });
+const hotter = consult(plugSpace, 'sparkplug', { heatRange: 9 });
+ok(potential.grounded && typeof potential.value.sparkPotential === 'number'
+  && hotter.value.sparkPotential > potential.value.sparkPotential,
+  `spark potential is stored nowhere, yet consulting gives it and it moves with heat range `
+  + `(${potential.value?.sparkPotential} at 7, ${hotter.value?.sparkPotential} at 9)`);
+ok(!gathered.some((s) => 'sparkPotential' in s.is),
+  'confirmed: sparkPotential appears in no acquired sample, it is derived not recalled');
+
+// Individual aspects are now encoded by the manifold, so they need not be carried.
+const shed = shedEnumeration(plugSpace, 'sparkplug', ['gap']);
+ok(shed.shed && shed.dropped === 4, `shed the ${shed.dropped} stored gaps: the manifold holds them now`);
+ok(!('gap' in invoke(plugSpace, 'sparkplug')[1].coord), 'the stored gap really is gone from the point');
+ok(consult(plugSpace, 'sparkplug', { heatRange: 6 }).value.gap === 0.044,
+  'and it still answers exactly: encoded forever, as long as the manifold is maintained');
+
+console.log('\n== "as long as it is maintained" is a real condition ==');
+const agrees = maintain(plugSpace, 'sparkplug', [{ at: { heatRange: 11 }, is: { gap: GAP(11) } }]);
+ok(agrees.held && agrees.checked === 5, `new grain that agrees widens the evidence to ${agrees.checked}`);
+
+const contradicts = maintain(plugSpace, 'sparkplug', [{ at: { heatRange: 5 }, is: { gap: 0.099 } }]);
+ok(!contradicts.held, 'grain that contradicts it invalidates the manifold: ' + contradicts.why);
+ok(!consult(plugSpace, 'sparkplug', { heatRange: 6 }).grounded,
+  'an invalidated manifold STOPS answering rather than quietly being wrong');
 
 console.log('\n== the interior is never lost: encapsulate round-trips ==');
 // encapsulate sorts keys, so compare canonically: same structure, key order is not information.
