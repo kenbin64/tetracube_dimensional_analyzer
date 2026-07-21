@@ -2,8 +2,8 @@
 // A timeline is an initial state + ordered deltas + a pure apply(state, delta). It never erases a
 // delta, so any past frame is reconstructible by folding the first k deltas onto the initial state.
 // Forward and rewind always agree because reconstruction is a pure function of the kept record. This
-// is the glass recomposing on rewind and the film replaying 1925: and it is the same machine as the
-// FastTrack netcode resync (seed + ordered deltas). The return is only ever as complete as the record.
+// is the glass recomposing on rewind and the film replaying 1925: and it is the same machine as a
+// lockstep netcode resync (seed + ordered deltas). The return is only ever as complete as the record.
 export function makeTimeline(initial, deltas, apply) { return { initial, deltas, apply }; }
 
 // The state after the first k deltas. k=0 is the initial "whole glass"; k=deltas.length is the end.

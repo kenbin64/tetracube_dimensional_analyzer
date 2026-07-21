@@ -8,7 +8,7 @@ let pass = 0, fail = 0;
 const ok = (c, n) => { if (c) { pass++; console.log('  PASS ' + n); } else { fail++; console.log('  FAIL ' + n); } };
 
 console.log('\n== "makes it worse": order-sensitive source is report-only, never auto-rewritten ==');
-ok(classify('fasttrack/3d.css').action === 'report', 'CSS -> report only (cascade is order-sensitive; the rewrite broke it)');
+ok(classify('assets/main.css').action === 'report', 'CSS -> report only (cascade is order-sensitive; the rewrite broke it)');
 ok(classify('app.js').action === 'report' && classify('main.py').action === 'report', 'JS and Python -> report only (order/scope/indentation)');
 ok(classify('index.html').action === 'report', 'HTML -> report only (order and nesting matter)');
 

@@ -1,7 +1,7 @@
 // test_rewind.mjs: the returnable-time receipt (PRIMER: event sourcing / deterministic replay).
 // A kept record replays to ANY past frame, forward and rewind agree, and rewinding to the start
 // recomposes the initial state exactly (the glass un-shatters; film replays 1925). Same machine as
-// the FastTrack netcode resync. Run: node dimensional-analyzer/test/test_rewind.mjs
+// a lockstep netcode resync. Run: node dimensional-analyzer/test/test_rewind.mjs
 import { makeTimeline, reconstruct } from '../src/timeline.mjs';
 import { shaSeq } from '../src/seedbloom.mjs';
 

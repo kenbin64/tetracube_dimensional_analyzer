@@ -38,7 +38,7 @@ const SKIP_EXT = new Set([
 
 // order / whitespace / cascade sensitive: report is fine, auto-rewrite can change behavior. REPORT ONLY.
 const REPORT_EXT = {
-  css: 'stylesheet: the cascade is order-sensitive, so an auto-rewrite can change behavior (verified: 34 computed-style diffs on 3d.css). Report and hand-apply only.',
+  css: 'stylesheet: the cascade is order-sensitive, so an auto-rewrite can change behavior (measured on a real stylesheet: 34 computed-style diffs). Report and hand-apply only.',
   scss: 'stylesheet (Sass): cascade + nesting are order-sensitive. Report only.',
   less: 'stylesheet (Less): cascade is order-sensitive. Report only.',
   js: 'source code: behavior depends on order, scope, and side effects. A structural report is safe; auto-rewrite is not.',
