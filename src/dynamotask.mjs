@@ -89,10 +89,40 @@ const INJECTION = [
   /rm\s+-rf\s+[\/~]/, /curl[^\n|]*\|\s*(ba)?sh/, /wget[^\n|]*\|\s*(ba)?sh/, /base64\s+-d/,
   /:\(\)\s*\{.*\};:/, /\bchmod\s+777\b/,
 ];
-export function crossFileChecks({ instruction = '', verifier = '', envFiles = [] }) {
+export function crossFileChecks({ instruction = '', verifier = '', envFiles = [],
+                                  dockerfile = '', artifacts = [], envHasSubdirs = false,
+                                  hasDockerignore = false }) {
   const fails = [], warns = [], notes = [];
   const inl = instruction.toLowerCase();
   const named = (f) => inl.includes(f.toLowerCase()) || inl.includes(('/app/' + f).toLowerCase());
+
+  // PACKAGING (learned the hard way, twice): every /app INPUT the instruction promises or the verifier
+  // reads must actually be provisioned by the image. A missing COPY means the file does not exist at
+  // run time, the agent cannot find its input, and even the shipped oracle scores 0.
+  if (dockerfile) {
+    const produced = new Set(artifacts.map((a) => String(a).split('/').pop()));
+    const refs = new Set();
+    // A dot only continues the name when more name follows, so a sentence-ending period after
+    // "/app/repair.py." is not read as part of the filename.
+    const NAME = /\/app\/([A-Za-z0-9_\-]+(?:\.[A-Za-z0-9_\-]+)*)/g;
+    for (const m of (instruction + ' ' + verifier).matchAll(NAME)) refs.add(m[1]);
+    const copied = new Set();
+    for (const m of dockerfile.matchAll(/^[ \t]*COPY\s+(?:--\S+\s+)*(\S+)\s+(\S+)/gm)) {
+      const src = m[1], dst = m[2];
+      copied.add(dst.replace(/\/$/, '').split('/').pop());   // COPY a/b.json /app/b.json
+      copied.add(src.split('/').pop());                       // COPY data /app/data  (dir form)
+    }
+    const missing = [...refs].filter((f) => !produced.has(f) && !copied.has(f));
+    if (missing.length)
+      fails.push({ code: 'input-not-in-image', terms: missing,
+        msg: 'the Dockerfile never COPYs these /app inputs, so they will not exist at run time (the agent cannot read them and even the oracle scores 0)' });
+  }
+
+  // PACKAGING: the platform's static check fails a build context that has subdirectories but no
+  // .dockerignore. Cheap to add, costs a full pipeline re-run to forget.
+  if (envHasSubdirs && !hasDockerignore)
+    fails.push({ code: 'no-dockerignore', terms: [],
+      msg: 'build context has subdirectories but no .dockerignore (the platform static check fails this)' });
 
   // Item 3: raw-byte / raw-text output comparison rejects valid answers over serialization.
   if (/\.read_text\(\)\s*==|\.read_bytes\(\)\s*==|==\s*open\([^)]*\)\.read\(\)/.test(verifier))
@@ -145,9 +175,12 @@ export function crossFileChecks({ instruction = '', verifier = '', envFiles = []
 }
 
 // Full task audit: instruction lint + cross-file checks, merged into one verdict.
-export function auditDynamoTask({ instruction = '', verifier = '', envFiles = [] }) {
+export function auditDynamoTask({ instruction = '', verifier = '', envFiles = [],
+                                  dockerfile = '', artifacts = [], envHasSubdirs = false,
+                                  hasDockerignore = false }) {
   const instr = lintDynamoTask(instruction);
-  const cf = crossFileChecks({ instruction, verifier, envFiles });
+  const cf = crossFileChecks({ instruction, verifier, envFiles, dockerfile, artifacts,
+                               envHasSubdirs, hasDockerignore });
   const fails = [...instr.fails, ...cf.fails];
   const warns = [...instr.warns, ...cf.warns];
   const notes = [...instr.notes, ...cf.notes];

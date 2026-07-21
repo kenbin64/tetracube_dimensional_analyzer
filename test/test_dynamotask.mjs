@@ -68,5 +68,37 @@ ok(nopin.warns.some((x) => x.code === 'no-input-hashpin'), 'trusting an /app inp
 const ans = crossFileChecks({ instruction: 'x', verifier: 'assert got==ref', envFiles: [{ name: 'expected_answers.json', text: '[]' }] });
 ok(ans.fails.some((x) => x.code === 'answer-in-env'), 'an answer-shaped file in the agent image is a FAIL (Area 4)');
 
+console.log('\n== packaging: the image must actually contain what the task promises ==');
+const pkgInstr = 'An example archive is at /app/archive.json. Write /app/repair.py.';
+const pkgVerif = 'open("/app/archive.json","rb").read()';
+const noCopy = crossFileChecks({
+  instruction: pkgInstr, verifier: pkgVerif, envFiles: [],
+  dockerfile: 'FROM ubuntu:24.04\nWORKDIR /app\n', artifacts: ['/app/repair.py'],
+});
+ok(noCopy.fails.some((x) => x.code === 'input-not-in-image' && x.terms.includes('archive.json')),
+   'an /app input the Dockerfile never COPYs is a FAIL (oracle would score 0)');
+
+const withCopy = crossFileChecks({
+  instruction: pkgInstr, verifier: pkgVerif, envFiles: [],
+  dockerfile: 'FROM ubuntu:24.04\nCOPY data/archive.json /app/archive.json\nWORKDIR /app\n',
+  artifacts: ['/app/repair.py'],
+});
+ok(!withCopy.fails.some((x) => x.code === 'input-not-in-image'),
+   'the same task with the COPY present is clean');
+
+const artifactOnly = crossFileChecks({
+  instruction: 'Write /app/repair.py.', verifier: 'run("/app/repair.py")',
+  envFiles: [], dockerfile: 'FROM ubuntu:24.04\n', artifacts: ['/app/repair.py'],
+});
+ok(!artifactOnly.fails.some((x) => x.code === 'input-not-in-image'),
+   'an artifact the AGENT produces is not expected in the image (no false positive)');
+
+const noIgnore = crossFileChecks({ instruction: 'x', verifier: 'y', envFiles: [], envHasSubdirs: true, hasDockerignore: false });
+ok(noIgnore.fails.some((x) => x.code === 'no-dockerignore'),
+   'build context with subdirectories and no .dockerignore is a FAIL (platform static check)');
+
+const okIgnore = crossFileChecks({ instruction: 'x', verifier: 'y', envFiles: [], envHasSubdirs: true, hasDockerignore: true });
+ok(!okIgnore.fails.some((x) => x.code === 'no-dockerignore'), 'with a .dockerignore present it is clean');
+
 console.log(`\n======================\n  ${pass} passed, ${fail} failed\n======================\n`);
 process.exit(fail ? 1 : 0);
