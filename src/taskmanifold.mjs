@@ -61,6 +61,10 @@ export const MEASURED = [
   // hidden modulus -> stumps; leaked modulus -> too easy.
   { task: 'dynamo-972aef1 reconstruct-routing-rule (membership fit-trap)', outcome: 'pass@2 cleared (valid fail)', stumps: true,
     at: { oracleGuidesSearch: false, frameGiven: false, reflexConfidentlyWrong: true, smoothCrux: false } },
+  // MEASURED 2026-07-22: linear-subspace fit-trap over GF(p), codim 2, class-label output.
+  // Cleared and submitted. Fifth confirmation of the keyed/exact-recovery engine.
+  { task: 'dynamo-b348ec2 recover-linear-rule (GF(p) subspace fit-trap)', outcome: 'cleared, submitted', stumps: true,
+    at: { oracleGuidesSearch: false, frameGiven: false, reflexConfidentlyWrong: true, smoothCrux: false } },
 ];
 
 // ── the manifold ─────────────────────────────────────────────────────────────
