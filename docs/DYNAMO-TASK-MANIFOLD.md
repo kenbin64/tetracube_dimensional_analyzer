@@ -199,3 +199,22 @@ breaks it, so the reflex returns a confident wrong number rather than failing.
 
 It also carries a mechanism distinct from the finite-field recovery engine used repeatedly so far,
 which matters for the range a human reviewer is looking for.
+
+### P3 — Counting task (Algorithms and Optimization), design under review
+
+Scored twice, because the verdict hinges on one axis the manifold cannot yet resolve:
+
+- If small-N brute force **guides** the fix: `oracleGuidesSearch: true` -> TOO EASY.
+- If the oracle only says "wrong" and the fix (period-M reformulation) is far: `oracleGuidesSearch:
+  false` -> STUMPS.
+
+**The design sits on the boundary.** The position-weight reflex is wrong at N=2, so an agent that
+brute-force-validates on tiny N sees the reflex fail immediately. That is a guiding signal. Verified
+in prototype: period-M transfer == brute force 40/40; homogeneous reflex wrong 23/40.
+
+**Design rule the analysis produces:** a counting/formula task self-verifies whenever the reflex is
+wrong on brute-forceable sizes, because the agent can compute the true value itself and compare. To
+clear the tool, the divergence between reflex and truth must be **invisible at every brute-forceable
+size and appear only at the graded scale**. A crux that bites at N=2 cannot stump; a crux that is
+correct for all N below the enumeration ceiling and wrong only past it can. Until the design meets
+that bar, the tool returns borderline and the slot should not be spent.
