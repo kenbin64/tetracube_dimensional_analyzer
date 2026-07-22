@@ -46,6 +46,10 @@ export const MEASURED = [
   // so it cleared the difficulty gate. The manifold had not seen it when the rule was written.
   { task: 'dynamo-bbb74dc recover-screening-rule', outcome: 'PR accepted (cleared difficulty)', stumps: true,
     at: { oracleGuidesSearch: false, frameGiven: false, reflexConfidentlyWrong: true, smoothCrux: false } },
+  // MEASURED 2026-07-22: the counting task (972aef1). Predicted TOO EASY, came back pass@2 2/2.
+  // Confirms a guiding oracle (known transfer-matrix template + small-N self-check) dominates.
+  { task: 'dynamo-972aef1 count-constrained-strings', outcome: 'pass@2 2/2', stumps: false,
+    at: { oracleGuidesSearch: true, frameGiven: true, reflexConfidentlyWrong: true, smoothCrux: false } },
 ];
 
 // ── the manifold ─────────────────────────────────────────────────────────────
