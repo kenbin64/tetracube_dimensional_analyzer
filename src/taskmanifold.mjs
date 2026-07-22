@@ -50,6 +50,12 @@ export const MEASURED = [
   // Confirms a guiding oracle (known transfer-matrix template + small-N self-check) dominates.
   { task: 'dynamo-972aef1 count-constrained-strings', outcome: 'pass@2 2/2', stumps: false,
     at: { oracleGuidesSearch: true, frameGiven: true, reflexConfidentlyWrong: true, smoothCrux: false } },
+  // MEASURED 2026-07-22: value-recovery fit-trap (972aef1 v2). Predicted robust, came back pass@2
+  // 2/2. Cause: outputting the GF(p) VALUE leaks the modulus (max score ~= p), collapsing the
+  // joint (prime, degree) unknown. A fit-trap is only robust if the OUTPUT does not reveal the
+  // hidden parameter. Scored honestly: oracleGuidesSearch=true (p readable from the output range).
+  { task: 'dynamo-972aef1 reconstruct-scoring-rule (value fit-trap)', outcome: 'pass@2 2/2', stumps: false,
+    at: { oracleGuidesSearch: true, frameGiven: true, reflexConfidentlyWrong: true, smoothCrux: false } },
 ];
 
 // ── the manifold ─────────────────────────────────────────────────────────────

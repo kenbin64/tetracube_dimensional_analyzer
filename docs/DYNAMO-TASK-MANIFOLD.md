@@ -218,3 +218,20 @@ clear the tool, the divergence between reflex and truth must be **invisible at e
 size and appear only at the graded scale**. A crux that bites at N=2 cannot stump; a crux that is
 correct for all N below the enumeration ceiling and wrong only past it can. Until the design meets
 that bar, the tool returns borderline and the slot should not be spent.
+
+### The output-leak rule (learned the hard way, 972aef1 v2)
+
+A fit-trap is robust only if fitting is structurally wrong AND the search for the hidden structure is
+unguided. The second half is easy to lose through the OUTPUT SURFACE:
+
+- **Value output leaks the modulus.** If the graded output is the field value mod p, then max(value)
+  is just below p, so the agent reads p straight off the data. Measured: this took a supposedly-robust
+  fit-trap to pass@2 2/2. The mod-p wraparound that makes fitting fail is the SAME thing that makes
+  values span [0,p), so value-recovery over GF(p) leaks p by construction.
+- **Membership/class output hides the modulus.** 8333840 outputs a class label (0..k), which reveals
+  nothing about p, so the (prime, degree) search stays unguided. That is why the membership surface
+  stumps and the value surface does not, even with identical underlying algebra.
+
+Design rule: score the OUTPUT for what it reveals about the hidden parameters, not just the abstract
+mechanism. If the output range, cardinality, or extremes pin the modulus/degree/key, oracleGuidesSearch
+is true and the task is too easy regardless of how deep the algebra is.
