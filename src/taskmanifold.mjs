@@ -30,7 +30,7 @@ export const AXES = {
 export const MEASURED = [
   { task: 'dynamo-8333840 recover-decision-rule', outcome: 'pass@5 0/5', stumps: true,
     at: { oracleGuidesSearch: false, frameGiven: false, reflexConfidentlyWrong: true, smoothCrux: false } },
-  { task: 'dynamo-3b8c2d6 keyed modular checksum', outcome: 'pass@2 0/2', stumps: true,
+  { task: 'dynamo-3b8c2d6 keyed modular checksum', outcome: 'pass@5 0/5 ACCEPTED', stumps: true,
     at: { oracleGuidesSearch: false, frameGiven: true, reflexConfidentlyWrong: true, smoothCrux: false } },
   { task: 'dynamo-47f3bb3 v2 secret modulus', outcome: 'pass@5 3/5', stumps: false,
     at: { oracleGuidesSearch: true, frameGiven: true, reflexConfidentlyWrong: true, smoothCrux: false } },
