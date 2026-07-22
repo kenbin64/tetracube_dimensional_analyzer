@@ -56,6 +56,11 @@ export const MEASURED = [
   // hidden parameter. Scored honestly: oracleGuidesSearch=true (p readable from the output range).
   { task: 'dynamo-972aef1 reconstruct-scoring-rule (value fit-trap)', outcome: 'pass@2 2/2', stumps: false,
     at: { oracleGuidesSearch: true, frameGiven: true, reflexConfidentlyWrong: true, smoothCrux: false } },
+  // MEASURED 2026-07-22: membership fit-trap (972aef1 v3, route label output hides the prime).
+  // Cleared the pass@2 difficulty gate (valid fail). Confirms the output-leak rule: same engine,
+  // hidden modulus -> stumps; leaked modulus -> too easy.
+  { task: 'dynamo-972aef1 reconstruct-routing-rule (membership fit-trap)', outcome: 'pass@2 cleared (valid fail)', stumps: true,
+    at: { oracleGuidesSearch: false, frameGiven: false, reflexConfidentlyWrong: true, smoothCrux: false } },
 ];
 
 // ── the manifold ─────────────────────────────────────────────────────────────
