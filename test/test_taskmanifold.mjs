@@ -15,7 +15,7 @@ for (const m of MEASURED) {
 }
 
 console.log('\n== deterministic: it is software, not a judgement call ==');
-const design = { oracleGuidesSearch: false, frameGiven: false, reflexConfidentlyWrong: true, smoothCrux: false };
+const design = { oracleGuidesSearch: false, frameGiven: false, reflexConfidentlyWrong: true, smoothCrux: false, secretPerInstance: true };
 const runs = Array.from({ length: 50 }, () => JSON.stringify(judge(design)));
 ok(new Set(runs).size === 1, `50 runs of the same design give exactly 1 distinct verdict (${new Set(runs).size})`);
 
@@ -24,16 +24,16 @@ const good = judge(design);
 ok(good.grounded && good.verdict === 'STUMPS', `a no-oracle, no-frame design: ${good.verdict}`);
 ok(good.because.includes('frame'), '  because: ' + good.because);
 
-const oracled = judge({ oracleGuidesSearch: true, frameGiven: false, reflexConfidentlyWrong: true, smoothCrux: false });
+const oracled = judge({ oracleGuidesSearch: true, frameGiven: false, reflexConfidentlyWrong: true, smoothCrux: false, secretPerInstance: true });
 ok(oracled.verdict === 'TOO EASY', `hand the agent a local oracle and it is ${oracled.verdict}`);
 ok(oracled.because.includes('narrows the search'),
   '  because: ' + oracled.because);
 
-const smooth = judge({ oracleGuidesSearch: false, frameGiven: false, reflexConfidentlyWrong: true, smoothCrux: true });
+const smooth = judge({ oracleGuidesSearch: false, frameGiven: false, reflexConfidentlyWrong: true, smoothCrux: true, secretPerInstance: true });
 ok(smooth.verdict === 'TOO EASY', `make the crux smooth and it is ${smooth.verdict} even with everything else right`);
 
 console.log('\n== it refuses where nothing has been measured ==');
-const never = judge({ oracleGuidesSearch: false, frameGiven: true, reflexConfidentlyWrong: false, smoothCrux: false });
+const never = judge({ oracleGuidesSearch: false, frameGiven: true, reflexConfidentlyWrong: false, smoothCrux: false, secretPerInstance: true });
 ok(!never.grounded && never.verdict === null,
   'an unmeasured corner returns no verdict rather than a guess: ' + never.why);
 
@@ -44,7 +44,7 @@ ok(undecidable.length > 0,
   `${undecidable.length} corner(s) the manifold cannot even derive: those are the ones worth building`);
 
 console.log('\n== the axes are named, so a task can be scored before it is built ==');
-ok(Object.keys(AXES).length === 4, `${Object.keys(AXES).length} axes, each with a stated meaning`);
+ok(Object.keys(AXES).length === 5, `${Object.keys(AXES).length} axes, each with a stated meaning`);
 ok(AXES.oracleGuidesSearch.includes('NARROW'), 'oracleGuidesSearch: ' + AXES.oracleGuidesSearch.slice(0, 60) + '...');
 
 console.log(`\n======================\n  ${pass} passed, ${fail} failed\n======================\n`);

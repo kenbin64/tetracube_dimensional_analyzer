@@ -23,48 +23,59 @@ export const AXES = {
   smoothCrux:
     'is the crux recoverable by fitting? anything smooth or parametric is a regression, and the '
     + 'agent wins',
+  secretPerInstance:
+    'is there a PER-INSTANCE SECRET the solver must recover (a hidden modulus, key, or rule, freshly '
+    + 'generated) that cannot have been memorised? If the task instead reduces to applying a known '
+    + 'published algorithm, the model does not derive it, it RECALLS it. Measured twice: '
+    + 'Aho-Corasick counting 2/2 and Lawler scheduling 5/5 both failed exactly here',
 };
 
 // ── what we have actually measured ───────────────────────────────────────────
 // Every row here is an outcome we ran, not an estimate. `stumps` is the ground truth.
 export const MEASURED = [
   { task: 'dynamo-8333840 recover-decision-rule', outcome: 'pass@5 0/5', stumps: true,
-    at: { oracleGuidesSearch: false, frameGiven: false, reflexConfidentlyWrong: true, smoothCrux: false } },
+    at: { oracleGuidesSearch: false, frameGiven: false, reflexConfidentlyWrong: true, smoothCrux: false, secretPerInstance: true } },
   { task: 'dynamo-3b8c2d6 keyed modular checksum', outcome: 'pass@5 0/5 ACCEPTED', stumps: true,
-    at: { oracleGuidesSearch: false, frameGiven: true, reflexConfidentlyWrong: true, smoothCrux: false } },
+    at: { oracleGuidesSearch: false, frameGiven: true, reflexConfidentlyWrong: true, smoothCrux: false, secretPerInstance: true } },
   { task: 'dynamo-47f3bb3 v2 secret modulus', outcome: 'pass@5 3/5', stumps: false,
-    at: { oracleGuidesSearch: true, frameGiven: true, reflexConfidentlyWrong: true, smoothCrux: false } },
+    at: { oracleGuidesSearch: true, frameGiven: true, reflexConfidentlyWrong: true, smoothCrux: false, secretPerInstance: true } },
   { task: 'dynamo-47f3bb3 v3 secret coefficients', outcome: 'pass@5 3/5', stumps: false,
-    at: { oracleGuidesSearch: true, frameGiven: true, reflexConfidentlyWrong: true, smoothCrux: false } },
+    at: { oracleGuidesSearch: true, frameGiven: true, reflexConfidentlyWrong: true, smoothCrux: false, secretPerInstance: true } },
   { task: 'dynamo-3b8c2d6 v1 format-from-samples', outcome: 'pass@2 2/2', stumps: false,
-    at: { oracleGuidesSearch: true, frameGiven: true, reflexConfidentlyWrong: false, smoothCrux: false } },
+    at: { oracleGuidesSearch: true, frameGiven: true, reflexConfidentlyWrong: false, smoothCrux: false, secretPerInstance: true } },
   { task: 'dynamo-fb6f02d chart layout', outcome: 'pass@2 2/2', stumps: false,
-    at: { oracleGuidesSearch: true, frameGiven: true, reflexConfidentlyWrong: false, smoothCrux: true } },
+    at: { oracleGuidesSearch: true, frameGiven: true, reflexConfidentlyWrong: false, smoothCrux: true, secretPerInstance: false } },
   { task: 'crypto key-recovery', outcome: 'solved 2/2 both regimes', stumps: false,
-    at: { oracleGuidesSearch: true, frameGiven: true, reflexConfidentlyWrong: false, smoothCrux: false } },
+    at: { oracleGuidesSearch: true, frameGiven: true, reflexConfidentlyWrong: false, smoothCrux: false, secretPerInstance: true } },
   // HELD OUT: scored from its design, then checked. dynamo-bbb74dc #3 carries the accepted label,
   // so it cleared the difficulty gate. The manifold had not seen it when the rule was written.
   { task: 'dynamo-bbb74dc recover-screening-rule', outcome: 'PR accepted (cleared difficulty)', stumps: true,
-    at: { oracleGuidesSearch: false, frameGiven: false, reflexConfidentlyWrong: true, smoothCrux: false } },
+    at: { oracleGuidesSearch: false, frameGiven: false, reflexConfidentlyWrong: true, smoothCrux: false, secretPerInstance: true } },
   // MEASURED 2026-07-22: the counting task (972aef1). Predicted TOO EASY, came back pass@2 2/2.
   // Confirms a guiding oracle (known transfer-matrix template + small-N self-check) dominates.
   { task: 'dynamo-972aef1 count-constrained-strings', outcome: 'pass@2 2/2', stumps: false,
-    at: { oracleGuidesSearch: true, frameGiven: true, reflexConfidentlyWrong: true, smoothCrux: false } },
+    at: { oracleGuidesSearch: true, frameGiven: true, reflexConfidentlyWrong: true, smoothCrux: false, secretPerInstance: false } },
   // MEASURED 2026-07-22: value-recovery fit-trap (972aef1 v2). Predicted robust, came back pass@2
   // 2/2. Cause: outputting the GF(p) VALUE leaks the modulus (max score ~= p), collapsing the
   // joint (prime, degree) unknown. A fit-trap is only robust if the OUTPUT does not reveal the
   // hidden parameter. Scored honestly: oracleGuidesSearch=true (p readable from the output range).
   { task: 'dynamo-972aef1 reconstruct-scoring-rule (value fit-trap)', outcome: 'pass@2 2/2', stumps: false,
-    at: { oracleGuidesSearch: true, frameGiven: true, reflexConfidentlyWrong: true, smoothCrux: false } },
+    at: { oracleGuidesSearch: true, frameGiven: true, reflexConfidentlyWrong: true, smoothCrux: false, secretPerInstance: true } },
   // MEASURED 2026-07-22: membership fit-trap (972aef1 v3, route label output hides the prime).
   // Cleared the pass@2 difficulty gate (valid fail). Confirms the output-leak rule: same engine,
   // hidden modulus -> stumps; leaked modulus -> too easy.
   { task: 'dynamo-972aef1 reconstruct-routing-rule (membership fit-trap)', outcome: 'pass@2 cleared (valid fail)', stumps: true,
-    at: { oracleGuidesSearch: false, frameGiven: false, reflexConfidentlyWrong: true, smoothCrux: false } },
+    at: { oracleGuidesSearch: false, frameGiven: false, reflexConfidentlyWrong: true, smoothCrux: false, secretPerInstance: true } },
   // MEASURED 2026-07-22: linear-subspace fit-trap over GF(p), codim 2, class-label output.
   // Cleared and submitted. Fifth confirmation of the keyed/exact-recovery engine.
   { task: 'dynamo-b348ec2 recover-linear-rule (GF(p) subspace fit-trap)', outcome: 'cleared, submitted', stumps: true,
-    at: { oracleGuidesSearch: false, frameGiven: false, reflexConfidentlyWrong: true, smoothCrux: false } },
+    at: { oracleGuidesSearch: false, frameGiven: false, reflexConfidentlyWrong: true, smoothCrux: false, secretPerInstance: true } },
+  // MEASURED 2026-07-22: Lawler series-parallel scheduling (7db39e8). pass@5 5/5, avg 1.000.
+  // No per-instance secret: the difficulty was a PUBLISHED algorithm (Lawler/Sidney), which the
+  // deep review flagged as 'well-represented in training data'. The model recalled it. Second
+  // confirmation of the no-secret law after the Aho-Corasick counting task.
+  { task: 'dynamo-7db39e8 optimal-precedence-scheduling', outcome: 'pass@5 5/5 (avg 1.000)', stumps: false,
+    at: { oracleGuidesSearch: false, frameGiven: true, reflexConfidentlyWrong: true, smoothCrux: false, secretPerInstance: false } },
 ];
 
 // ── the manifold ─────────────────────────────────────────────────────────────
@@ -83,6 +94,13 @@ export function derive(at) {
       stumps: false,
       because: 'checking a guess narrows the search, so the agent walks to the answer; '
         + 'burying more secrets inside the frame does not change that',
+    };
+  }
+  if (at.secretPerInstance === false) {
+    return {
+      stumps: false,
+      because: 'there is no per-instance secret, so the task reduces to applying a known published '
+        + 'algorithm; the model recalls it rather than deriving it, however deep the theory is',
     };
   }
   if (!at.frameGiven || at.reflexConfidentlyWrong) {

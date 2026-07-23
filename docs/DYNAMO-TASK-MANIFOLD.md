@@ -235,3 +235,36 @@ unguided. The second half is easy to lose through the OUTPUT SURFACE:
 Design rule: score the OUTPUT for what it reveals about the hidden parameters, not just the abstract
 mechanism. If the output range, cardinality, or extremes pin the modulus/degree/key, oracleGuidesSearch
 is true and the task is too easy regardless of how deep the algebra is.
+
+---
+
+## The no-secret law (measured twice, the sharpest rule we have)
+
+**Difficulty must come from a SECRET the model cannot know, never from an ALGORITHM the model might
+not know.**
+
+Two tasks were built on deep, genuinely expert algorithms and both were solved outright:
+
+| Task | Algorithm the difficulty rested on | Result |
+|---|---|---|
+| counting under a position-weighted checksum | Aho-Corasick + transfer-matrix exponentiation | pass@2 **2/2** |
+| optimal series-parallel scheduling | Lawler / Sidney composite-block merge | pass@5 **5/5**, avg 1.000 |
+
+Both are named, published, textbook results. The deep review on the second said it plainly: the
+algorithm "is well-represented in training data and is not a barrier to conceptual understanding."
+The model did not derive it. It **recalled** it. Depth of theory is not difficulty when the theory is
+in the training set.
+
+Every task that has stumped required recovering a **per-instance secret** generated fresh for that
+instance, so there is nothing to recall:
+
+| Task | Secret | Result |
+|---|---|---|
+| 3b8c2d6 | secret prime in a keyed trailer | pass@5 0/5, ACCEPTED |
+| 8333840 | hidden relations + modulus + degree | pass@5 0/5 |
+| bbb74dc | hidden finite-field surface | accepted |
+
+Design rule: before building, ask **"what must the solver recover that could not possibly have been
+memorised?"** If the answer is "nothing, they just have to know algorithm X," the task will be solved,
+no matter how advanced X is. Encoded as the `secretPerInstance` axis; with it the manifold predicts
+both failures it previously got wrong, and still reproduces all 13 measured outcomes.
